@@ -35,7 +35,7 @@ Got your note ${addressPhrase}. I'll call you from ${tenant.contact.phone} — p
 
 ${signatureBlock(tenant)}
 
-Reply STOP to opt out of texts at any time.`;
+Reply to this email any time to opt out of future messages.`;
 
   return {
     subject: lead.property_address ? `Got your note about ${lead.property_address}` : "Got your note",
@@ -168,7 +168,7 @@ Checking back in ${addressPhrase} — no news is fine, just wanted to see where 
 
 ${signatureBlock(tenant)}
 
-Reply STOP to opt out of texts at any time.`;
+Reply to this email any time to opt out of future messages.`;
 
   return {
     subject: lead.property_address ? `Checking in on ${lead.property_address}` : "Checking in",
