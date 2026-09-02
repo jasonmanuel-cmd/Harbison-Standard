@@ -143,15 +143,55 @@ adds host-header resolution (`middleware.ts`) and a scaffolding script
 (`scripts/make-tenant.mjs`) to stand up a new agent's site from a short
 questionnaire.
 
-## Deployment
+## Deploying to Vercel
 
-Full step-by-step deploy instructions (Vercel + Supabase, and a
-self-hosted Docker/VPS alternative) land once Phase 3's automations
-(Resend/Twilio/cron) are in — deploying before then would ship a working
-site with no follow-up automation behind it. In the meantime: this is a
-standard Next.js app, so any Next-compatible host (Vercel, a Docker
-container, a VPS running `next start`) works once "Setting up Supabase"
-above is done and the same env vars are set in that host's environment.
+1. Push this repo to GitHub (or GitLab/Bitbucket) and import it in
+   [Vercel](https://vercel.com/new) — it's a standard Next.js app, so
+   Vercel auto-detects the framework and build command with zero config.
+2. Finish "Setting up Supabase" above first if you haven't (migrations
+   run, tenant row inserted).
+3. In the Vercel project's Settings → Environment Variables, set:
+   - `NEXT_PUBLIC_SITE_URL` — your real domain once you have one (e.g.
+     `https://theharbisonstandard.com`); update `tenants/harbison.ts`'s
+     `domains` array too once a domain is live.
+   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+     `SUPABASE_SERVICE_ROLE_KEY` — from your Supabase project settings.
+   - `RESEND_API_KEY` and `RESEND_FROM_EMAIL` — see the note in
+     `.env.example`: `RESEND_FROM_EMAIL` **must** be on a domain you've
+     verified with Resend (a Gmail address won't work as a `from`).
+     Automated emails still work without these set — they log to
+     console/`outreach_log` instead of sending (§3's graceful-degradation
+     rule) — but nothing actually reaches a lead's inbox until they're
+     configured.
+   - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER` —
+     from your Twilio console. Point that Twilio number's voice status
+     callback at `https://<your-domain>/api/webhooks/twilio`. Same
+     graceful degradation applies without these set.
+   - `CRON_SECRET` — generate with `openssl rand -hex 32`. Vercel
+     automatically sends it as `Authorization: Bearer $CRON_SECRET` on
+     the cron-triggered request defined in `vercel.json`, which is what
+     `app/api/cron/briefing/route.ts` checks against.
+4. Deploy. `vercel.json`'s `crons` entry registers the morning-briefing
+   schedule automatically — no separate setup step on Vercel's side.
+5. Confirm the cron is registered: Vercel project → Cron Jobs tab. You
+   can also trigger `/api/cron/briefing` manually (with the
+   `Authorization: Bearer <CRON_SECRET>` header) to test it without
+   waiting for the schedule.
+
+**Known limitation on serverless hosts** (Vercel included):
+`lib/rate-limit.ts`'s 5-requests/hour-per-IP limit is in-memory and
+process-local — see `DECISIONS.md`. It still functions (each serverless
+instance enforces its own limit), but isn't a hard global guarantee under
+Vercel's horizontal scaling. Move it to a `leads`-table query (count
+recent rows by IP) if that gap matters before launch.
+
+**Self-hosting instead of Vercel:** this is a standard Next.js app with
+no Vercel-specific APIs beyond the two things above (the `vercel.json`
+cron and the `CRON_SECRET` header convention) — a Docker container or a
+VPS running `next start` works identically, just trigger
+`/api/cron/briefing` on your own schedule (any cron daemon, e.g. system
+`cron` calling `curl` with the `Authorization` header) instead of relying
+on `vercel.json`.
 
 ## Client ownership
 

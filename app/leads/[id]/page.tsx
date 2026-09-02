@@ -5,7 +5,13 @@ import { PillarBadge } from "@/components/crm/PillarBadge";
 import { fetchLeadDetail } from "@/lib/leads-query";
 import { scoreBreakdown } from "@/lib/scoring-breakdown";
 import { relativeAge, SOURCE_LABELS, STATUS_LABELS } from "@/lib/format";
-import { updateLeadStatus, updateLeadNotes } from "./actions";
+import {
+  updateLeadStatus,
+  updateLeadNotes,
+  generateVideoPage,
+  updateLeadVideoUrl,
+  sendNurtureCheckIn,
+} from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -57,6 +63,24 @@ export default async function LeadDetailPage({
     await updateLeadNotes(id, String(formData.get("agent_notes") ?? ""));
   }
 
+  async function submitGenerateVideo() {
+    "use server";
+    if (readOnly) return;
+    await generateVideoPage(id);
+  }
+
+  async function submitVideoUrl(formData: FormData) {
+    "use server";
+    if (readOnly) return;
+    await updateLeadVideoUrl(id, String(formData.get("video_url") ?? ""));
+  }
+
+  async function submitNurtureCheckIn() {
+    "use server";
+    if (readOnly) return;
+    await sendNurtureCheckIn(id);
+  }
+
   return (
     <div className="min-h-screen bg-paper">
       <CrmHeader tenant={tenant} demo={demo} />
@@ -65,7 +89,7 @@ export default async function LeadDetailPage({
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="font-serif text-3xl text-navy">{lead.name}</h1>
-            <p className="mt-1 text-navy/70">{lead.property_address}</p>
+            <p className="mt-1 text-navy/70">{lead.property_address ?? "Address unknown"}</p>
           </div>
           <div className="text-right">
             <p className="font-serif text-3xl text-navy">{lead.score}</p>
@@ -86,19 +110,21 @@ export default async function LeadDetailPage({
           >
             Call {lead.phone}
           </a>
-          <a
-            href={`mailto:${lead.email}`}
-            className="border border-navy/30 px-4 py-2 text-sm font-semibold uppercase tracking-wide text-navy"
-          >
-            Email
-          </a>
+          {lead.email && (
+            <a
+              href={`mailto:${lead.email}`}
+              className="border border-navy/30 px-4 py-2 text-sm font-semibold uppercase tracking-wide text-navy"
+            >
+              Email
+            </a>
+          )}
         </div>
 
         <section className="mt-10">
           <h2 className="font-serif text-xl text-navy">Details</h2>
           <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
             <dt className="text-navy/50">Situation</dt>
-            <dd className="text-navy">{lead.situation}</dd>
+            <dd className="text-navy">{lead.situation ?? "—"}</dd>
             <dt className="text-navy/50">Timeline</dt>
             <dd className="text-navy">{lead.timeline ?? "—"}</dd>
             <dt className="text-navy/50">Pillar</dt>
@@ -198,18 +224,78 @@ export default async function LeadDetailPage({
           </form>
         </section>
 
+        {lead.bucket === "nurture" && (
+          <section className="mt-10">
+            <h2 className="font-serif text-xl text-navy">Monthly check-in</h2>
+            <p className="mt-1 text-sm text-navy/60">
+              Draft-only, sent manually — no automated sequence (§7.4 v1).
+            </p>
+            {lead.email ? (
+              !readOnly && (
+                <form action={submitNurtureCheckIn} className="mt-3">
+                  <button
+                    type="submit"
+                    className="border border-navy/30 bg-white px-4 py-2 text-sm font-semibold text-navy"
+                  >
+                    Send check-in email
+                  </button>
+                </form>
+              )
+            ) : (
+              <p className="mt-3 text-xs text-navy/50">No email on file — can&rsquo;t send.</p>
+            )}
+          </section>
+        )}
+
         <section className="mt-10">
           <h2 className="font-serif text-xl text-navy">Video page</h2>
-          <button
-            type="button"
-            disabled
-            className="mt-3 border border-navy/20 bg-white px-4 py-2 text-sm font-semibold text-navy/40"
-          >
-            Generate video page
-          </button>
-          <p className="mt-2 text-xs text-navy/50">
-            Ships in Phase 3, once outreach automation is wired up.
-          </p>
+          {lead.video_slug ? (
+            <div className="mt-3 space-y-3">
+              <p className="text-sm text-navy">
+                <a
+                  href={`/v/${lead.video_slug}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline decoration-brass"
+                >
+                  {tenant.siteUrl}/v/{lead.video_slug}
+                </a>
+              </p>
+              {!readOnly && (
+                <form action={submitVideoUrl} className="flex flex-wrap gap-3">
+                  <input
+                    type="text"
+                    name="video_url"
+                    defaultValue={lead.video_url ?? ""}
+                    placeholder="YouTube URL or /media/hero.mp4"
+                    className="min-w-64 flex-1 border border-navy/30 bg-white px-3 py-2 text-sm text-navy"
+                  />
+                  <button
+                    type="submit"
+                    className="border border-navy/30 bg-white px-4 py-2 text-sm font-semibold text-navy"
+                  >
+                    Update video URL
+                  </button>
+                </form>
+              )}
+            </div>
+          ) : readOnly ? (
+            <p className="mt-3 text-xs text-navy/50">No video page generated yet.</p>
+          ) : (
+            <form action={submitGenerateVideo}>
+              <button
+                type="submit"
+                className="mt-3 border border-navy/30 bg-white px-4 py-2 text-sm font-semibold text-navy"
+              >
+                Generate video page
+              </button>
+              <p className="mt-2 text-xs text-navy/50">
+                Creates a shareable link with the tenant&rsquo;s default
+                video — paste a real recorded video URL afterward if you
+                have one.
+              </p>
+            </form>
+          )}
         </section>
       </div>
     </div>

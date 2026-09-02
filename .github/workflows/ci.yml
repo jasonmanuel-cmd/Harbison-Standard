@@ -27,6 +27,12 @@ jobs:
       - name: Copy lint (fair housing / banned phrases)
         run: npm run copy-lint
 
+      - name: Start PostgreSQL (for RLS/scoring proof tests)
+        run: sudo systemctl start postgresql.service
+
+      - name: Test
+        run: npm test
+
       - name: Build
         run: npm run build
 

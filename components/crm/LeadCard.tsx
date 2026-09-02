@@ -14,7 +14,7 @@ export function LeadCard({ lead, demo }: { lead: LeadRow; demo: boolean }) {
           <p className="font-serif text-lg text-navy">{lead.name}</p>
           <p className="font-serif text-lg text-navy">{lead.score}</p>
         </div>
-        <p className="mt-1 text-sm text-navy/70">{lead.property_address}</p>
+        <p className="mt-1 text-sm text-navy/70">{lead.property_address ?? "Address unknown"}</p>
 
         <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-navy/60">
           <PillarBadge pillar={lead.intent_pillar} />
@@ -32,9 +32,11 @@ export function LeadCard({ lead, demo }: { lead: LeadRow; demo: boolean }) {
         <a href={`tel:${lead.phone}`} className="text-navy underline decoration-brass">
           Call
         </a>
-        <a href={`mailto:${lead.email}`} className="text-navy underline decoration-brass">
-          Email
-        </a>
+        {lead.email && (
+          <a href={`mailto:${lead.email}`} className="text-navy underline decoration-brass">
+            Email
+          </a>
+        )}
         <Link href={href} className="ml-auto text-navy/60 underline decoration-navy/30">
           Details →
         </Link>

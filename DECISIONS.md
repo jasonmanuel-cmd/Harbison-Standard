@@ -3,6 +3,162 @@
 Judgment calls made where the spec was silent or ambiguous, newest first.
 Each entry: what was decided, why, and what would change it.
 
+## Phase 3
+
+### CI never actually ran `npm test` until now
+Following on from the `npm test` bug above: even after fixing the
+script, `.github/workflows/ci.yml` never called it at all — the RLS/
+scoring proof tests (arguably the most compliance-critical tests in this
+repo per §9) have never run in CI, only ever locally in this session.
+Added a `Start PostgreSQL` step (`sudo systemctl start postgresql.service`)
+before `npm test`, relying on GitHub's `ubuntu-latest` runner image
+shipping PostgreSQL pre-installed (documented in GitHub's runner-images
+repo) — the same peer-auth connection method `tests/helpers/db.mjs`
+already uses locally, so no test-harness rewrite needed for a
+TCP/password-auth service-container alternative. **Not verified against
+an actual GitHub Actions run** (no way to trigger one from this
+environment) — if `ubuntu-latest` ever drops the pre-installed Postgres
+or the service name differs, this step will need adjusting. Watch the
+first real CI run after this lands.
+
+### `npm test` was silently broken — `node --test tests/` doesn't work on this Node version
+Caught while doing the final Phase 3 verification pass, not before: the
+`test` script in `package.json` since Phase 2 was `node --test tests/`,
+which throws `MODULE_NOT_FOUND` on Node 22.22.2 in this environment — it
+tries to `require()` the directory path itself rather than discovering
+`*.test.mjs` files under it. Bare `node --test` (no path argument) works
+correctly, using Node's built-in recursive test-file discovery from the
+current directory. Changed the script to that. This means every "tests
+pass" claim in `PHASES.md` for Phases 2 and 3 up to this point was
+verified by running `node --test tests/rls.test.mjs` directly (which
+does work — the bug is specific to passing a bare directory), never via
+the actual `npm test` entry point a contributor or CI would use. Worth
+naming plainly: the individual test runs were real, but the documented
+"run `npm test`" instruction itself would have failed for anyone who
+tried it before this fix.
+
+### copy-lint never actually banned "safe neighborhood" — the exact phrase §9 names as its test case
+Writing an automated regression test for the copy-lint detection logic
+(`tests/copy-lint.test.mjs`, closing the §9 acceptance test "intentionally
+adding 'safe neighborhood' fails the build") surfaced that the banned-
+phrase list had "safe area" and "safe community" but never the literal
+phrase "safe neighborhood" — the one instance §9 explicitly names as the
+example that must fail the build. Added it. Also extracted the banned-
+phrase lists and detection function from `scripts/copy-lint.mjs` into
+`scripts/lint-rules.mjs` so both the real linter and the test import the
+same logic, rather than the test re-implementing (and potentially
+drifting from) what the linter actually checks.
+
+### `RESEND_FROM_EMAIL` is actually wired up now — every automated send was using a Gmail address as `from`
+While checking Vercel/production deploy-readiness, found that every
+email send (auto-reply, morning briefing, nurture check-in) used
+`tenant.contact.email` — `nate85.realtor@gmail.com` — as the `from`
+address, even though `.env.example` already documented a
+`RESEND_FROM_EMAIL` variable that nothing actually read. Resend (like
+essentially every transactional-email provider) requires `from` to be on
+a domain you've verified with them via DNS records; you cannot send *as*
+an arbitrary Gmail address. Added `lib/email/from-address.ts`
+(`resolveFromAddress`) and wired it into all three send sites:
+`RESEND_FROM_EMAIL` when set, falling back to the contact email
+otherwise so nothing crashes pre-domain — Resend will reject the send
+with a clear provider error in that fallback case, which is the correct
+failure mode (visible in logs) rather than a silent success that looks
+fine locally and breaks in production. **Operator action needed:** once
+a domain is purchased and verified with Resend, set `RESEND_FROM_EMAIL`
+(e.g. `leads@theharbisonstandard.com`) — no code change required after
+that.
+
+### Video "generation" creates a slug + falls back to the tenant's default video
+§7.4's "generate video page" action has no video-generation service
+behind it — none is specified, and building one is out of scope. Reading
+it pragmatically: "generate" means create the unique `/v/[slug]` and give
+it something to show immediately, which is the tenant's existing hero
+footage (`public/media/hero.mp4` — finally put to use after sitting
+unreferenced since Phase 0/1). The lead-detail screen lets the agent
+paste a real recorded video URL (YouTube or an uploaded MP4 path)
+afterward; personalization on the generic-video path comes from the
+on-page text (name, address, transcript), not per-lead footage.
+
+### OG image doesn't pin `runtime = "edge"`
+§7.4 describes the OG image as "(edge, satori)." `next/og`'s
+`ImageResponse` is Next's built-in Satori wrapper — no separate `satori`
+dependency — but `next build` warned that Next 16 deprecated the
+`runtime = "edge"` route-segment export in favor of always using the
+`nodejs` runtime, which runs `ImageResponse` identically. Followed the
+current framework's own guidance over the spec's now-outdated runtime
+name for the same reason as the Supabase version pin: the literal string
+"edge" was standing in for "fast, on-demand image generation," which
+`nodejs` still delivers here.
+
+### STOP suppression lives in `outreach_log`, not a new table
+§8 requires a suppression check on every automated send, but §5's schema
+has no dedicated opt-out table or column, and it's fixed ("migrations
+must create exactly this"). `outreach_log` already records every inbound
+message, so an inbound row with `direction: 'in'`, `channel: 'text'`, and
+a body containing "stop" (case-insensitive — matches the keyword Twilio
+itself recognizes) doubles as the suppression record
+(`lib/suppression.ts`). Scoped by phone number across every lead that
+shares it — the missed-call webhook creates a new lead row per call
+rather than reusing one, so a STOP has to apply to the phone number, not
+one specific lead id. In real production, Twilio's own Advanced Opt-Out
+feature intercepts STOP replies before they reach this app at all — this
+check is defense in depth, and it's what makes `/dev/stop-simulator`
+meaningful to test without a real Twilio number.
+
+### `/dev/simulate-missed-call` and `/dev/stop-simulator` self-disable, not auth-gated
+§7.4/§8 ask for these as ways to exercise the missed-call and STOP-
+suppression logic "without Twilio creds." Rather than gating them behind
+CRM login (which would make them useless for a quick pre-auth smoke test,
+and adds a second protection model alongside the "not configured"
+condition that already defines when they're relevant), both pages check
+`TWILIO_ACCOUNT_SID`/`AUTH_TOKEN`/`PHONE_NUMBER` server-side and refuse to
+run their action once Twilio is actually configured — which is exactly
+the point where they'd otherwise let an unauthenticated visitor create
+real fake leads or fire real texts in production. `robots.ts` also
+disallows `/dev/` so they're never indexed. If the operator wants a
+second layer, adding them to `middleware.ts`'s protected prefixes is a
+small change — flagged here rather than silently assumed unnecessary.
+
+### `vercel.json` cron is a fixed UTC time — ~1hr drift across DST, by design
+§7.4 wants the morning briefing at "07:00 America/Los_Angeles," but
+Vercel Cron Jobs run on plain cron syntax evaluated in UTC — there's no
+IANA timezone field, and no first-party DST-aware alternative. Picked
+`0 14 * * *` (14:00 UTC), which is exactly 07:00 during Pacific Daylight
+Time (roughly mid-March to early November, the majority of the year) and
+06:00 during Pacific Standard Time the rest of the year — a fire time
+that's up to an hour early in winter, never late. Early is the safer
+direction for a briefing meant to be read before the day starts. A
+precise fix would mean two cron entries plus in-route date-math to no-op
+the wrong one each half of the year — not worth it for an internal email
+with an hour of acceptable slop.
+
+### `CRON_SECRET` checked via `Authorization: Bearer` header
+Vercel's own Cron Jobs docs describe this exact convention: when a
+`CRON_SECRET` env var is present, Vercel automatically sends
+`Authorization: Bearer $CRON_SECRET` on requests it triggers from
+`vercel.json`. `app/api/cron/briefing/route.ts` checks for that exact
+header, which is both the §7.4-mandated protection and literally how
+Vercel expects a cron route to protect itself — no separate mechanism
+invented.
+
+### Relaxed 5 `leads` columns from NOT NULL to nullable
+Phase 2's migration marked `email`, `property_address`, `situation`,
+`consent_text`, and `consent_at` all `not null`, reading §5 through the
+lens of the one ingest path built at the time — the web form, where
+every one of those fields is genuinely required (§7.2). Building the
+Phase 3 missed-call webhook exposed that this was too narrow: a missed
+call supplies a phone number and nothing else. §7.4 itself confirms this
+isn't an oversight to route around — it explicitly says "Respect
+`consent_at IS NULL`," meaning the spec's own design expects that state
+to exist. Added a new migration (`20260902130000_relax_lead_optional_fields.sql`)
+rather than editing the Phase 2 one — once a migration has shipped,
+correcting it is a new migration, not a rewrite of history. Added a test
+(`tests/rls.test.mjs`) proving a phone-only insert succeeds. `name`
+stays `NOT NULL`: even a missed-call lead gets a display name (falls
+back to the caller's phone number — see the Twilio webhook), so every
+row is guaranteed to render sensibly in the CRM without a cascade of
+null-checks through every display component.
+
 ## Phase 2
 
 ### `@supabase/supabase-js` pinned to 2.50.x, not latest (2.113.x)

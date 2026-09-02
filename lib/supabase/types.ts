@@ -11,14 +11,17 @@ export interface LeadRow {
   source: string;
   name: string;
   phone: string;
-  email: string;
-  property_address: string;
+  // Nullable: the missed-call ingest path (§7.4) only ever has a phone
+  // number at the moment of creation. Web-form leads (§7.2) always
+  // provide these; other ingest paths may not.
+  email: string | null;
+  property_address: string | null;
   city: string | null;
-  situation: string;
+  situation: string | null;
   timeline: string | null;
   intent_pillar: string | null;
-  consent_text: string;
-  consent_at: string;
+  consent_text: string | null;
+  consent_at: string | null;
   ip: string | null;
   user_agent: string | null;
   form_seconds_open: number | null;
@@ -38,20 +41,23 @@ export interface LeadRow {
   notes: Record<string, unknown>;
 }
 
-export type LeadInsert = Pick<
-  LeadRow,
-  | "tenant_id"
-  | "source"
-  | "name"
-  | "phone"
-  | "email"
-  | "property_address"
-  | "situation"
-  | "timeline"
-  | "consent_text"
-  | "consent_at"
-> &
-  Partial<Pick<LeadRow, "ip" | "user_agent" | "form_seconds_open" | "flagged_spam" | "utm">>;
+export type LeadInsert = Pick<LeadRow, "tenant_id" | "source" | "name" | "phone"> &
+  Partial<
+    Pick<
+      LeadRow,
+      | "email"
+      | "property_address"
+      | "situation"
+      | "timeline"
+      | "consent_text"
+      | "consent_at"
+      | "ip"
+      | "user_agent"
+      | "form_seconds_open"
+      | "flagged_spam"
+      | "utm"
+    >
+  >;
 
 export interface OutreachLogRow {
   id: string;

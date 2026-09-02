@@ -3,6 +3,9 @@ import { getTenant } from "@/tenants";
 import { CONSENT_TEXT, HONEYPOT_FIELD, TIME_TRAP_FIELD } from "@/lib/situations";
 import { isRateLimited } from "@/lib/rate-limit";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { sendEmail } from "@/lib/resend";
+import { autoReplyEmail } from "@/lib/email/templates";
+import { resolveFromAddress } from "@/lib/email/from-address";
 
 // Lead ingest (§7.2). Accepts a plain `<form method="POST">` submission
 // (no-JS path -> 303 redirect to /thank-you) and the same endpoint hit
@@ -14,17 +17,20 @@ import { getSupabaseAdmin } from "@/lib/supabase/admin";
 // insert itself uses the service-role client (§5: "used only
 // server-side") so it bypasses RLS as a trusted write — the anon
 // insert-only policy stays in place as the safety net for anyone who
-// bypasses this route and hits Supabase directly. Deliberately never
-// chains `.select()` after `.insert()`; see DECISIONS.md's Phase 2 entry
-// on RLS + RETURNING for why that's a hard rule, not a style choice.
-// Scoring itself is computed entirely by the Postgres trigger
-// fn_score_lead() (§5) — this route never duplicates that logic, it only
-// supplies raw inputs.
+// bypasses this route and hits Supabase directly. This insert DOES chain
+// `.select()` (unlike an anon-context insert): the service-role key
+// bypasses RLS entirely, including the SELECT-on-RETURNING check that
+// blocks anon (see DECISIONS.md's Phase 2 entry) — and the lead's id is
+// needed to log the auto-reply to outreach_log. Scoring itself is
+// computed entirely by the Postgres trigger fn_score_lead() (§5) — this
+// route never duplicates that logic, it only supplies raw inputs.
 //
 // When Supabase env vars aren't set (local dev with no project
 // configured yet), falls back to the same console-log stub Phase 1
 // shipped — the lead still "saves" (to the log) and the user still sees
-// success, consistent with the graceful-degradation rule in §3.
+// success, consistent with the graceful-degradation rule in §3. The
+// auto-reply email (§7.4) only fires on a real, non-spam insert — there's
+// no lead id to log outreach against in the stub path.
 
 function wantsJson(request: Request): boolean {
   return (request.headers.get("accept") ?? "").includes("application/json");
@@ -145,12 +151,33 @@ export async function POST(request: Request) {
         JSON.stringify({ tenant_slug: tenant.slug, ...leadInput }),
       );
     } else {
-      const { error: insertError } = await admin
+      const { data: inserted, error: insertError } = await admin
         .from("leads")
-        .insert({ tenant_id: tenantRow.id, ...leadInput });
+        .insert({ tenant_id: tenantRow.id, ...leadInput })
+        .select("id, flagged_spam")
+        .single();
 
-      if (insertError) {
+      if (insertError || !inserted) {
         console.error("[leads] insert failed", insertError);
+      } else if (!inserted.flagged_spam) {
+        const email = autoReplyEmail({ name, property_address: propertyAddress }, tenant);
+        const result = await sendEmail({
+          to: leadInput.email,
+          from: resolveFromAddress(tenant),
+          subject: email.subject,
+          text: email.text,
+        });
+
+        await admin.from("outreach_log").insert({
+          tenant_id: tenantRow.id,
+          lead_id: inserted.id,
+          channel: "email",
+          direction: "out",
+          body: email.text,
+          ai_generated: true,
+          disclosed_ai: false,
+          outcome: result.sent ? "sent" : "stub-logged",
+        });
       }
     }
   }

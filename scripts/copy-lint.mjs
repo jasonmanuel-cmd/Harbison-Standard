@@ -3,44 +3,20 @@
 // fails the build if banned copy ships anywhere in the site. See §8 of the
 // project spec.
 //
-// Phase 0: scans source text (app/, components/, tenants/) since that is
-// the only copy that exists pre-launch. Phase 1 should extend this to also
-// crawl the built static HTML output, once real pages/FAQ/press-kit copy
-// exists, so copy assembled at render time is covered too.
+// Scans source text for banned phrases. Started (Phase 0) covering only
+// app/, components/, tenants/ since that was the only copy that existed
+// pre-launch; added lib/ in Phase 3 once email templates
+// (lib/email/templates.ts) became real outbound copy. Should still be
+// extended to crawl the built static HTML output, so copy assembled at
+// render time (not just source string literals) is covered too.
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, extname } from "node:path";
+import { findBannedPhrases } from "./lint-rules.mjs";
 
 const ROOT = new URL("..", import.meta.url).pathname;
-const SCAN_DIRS = ["app", "components", "tenants"];
+const SCAN_DIRS = ["app", "components", "tenants", "lib"];
 const SCAN_EXTENSIONS = new Set([".ts", ".tsx", ".md", ".mdx"]);
-
-// Fair-housing steering language + demographic references (§8).
-const FAIR_HOUSING_BANNED = [
-  "best neighborhood",
-  "safe area",
-  "safe community",
-  "family-friendly",
-  "family friendly",
-  "good schools",
-  "bad area",
-  "crime",
-  "no children",
-  "adults only",
-  "exclusive community",
-  "traditional family",
-];
-
-// Outcome/superlative claims banned by brand voice (§2) and CA DRE
-// no-guarantee rule (§8). "best" is checked separately with a narrower
-// pattern below since it appears inside allowed phrasing like "best read".
-const CLAIM_BANNED = [
-  "guaranteed",
-  "guarantee",
-  "highest cash offer",
-  "risk-free",
-  "risk free",
-];
 
 function collectFiles(dir) {
   let out = [];
@@ -63,17 +39,7 @@ function collectFiles(dir) {
 }
 
 function lintFile(path) {
-  const text = readFileSync(path, "utf8");
-  const lower = text.toLowerCase();
-  const hits = [];
-
-  for (const phrase of [...FAIR_HOUSING_BANNED, ...CLAIM_BANNED]) {
-    if (lower.includes(phrase)) {
-      hits.push(phrase);
-    }
-  }
-
-  return hits;
+  return findBannedPhrases(readFileSync(path, "utf8"));
 }
 
 function main() {

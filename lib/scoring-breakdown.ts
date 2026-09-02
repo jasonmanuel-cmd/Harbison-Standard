@@ -29,7 +29,7 @@ const SITUATION_PILLAR = new Set(["build", "invest"]);
 
 export function scoreBreakdown(
   lead: {
-    situation: string;
+    situation: string | null;
     timeline: string | null;
     phone: string;
     form_seconds_open: number | null;
@@ -43,7 +43,9 @@ export function scoreBreakdown(
 
   const lines: ScoreBreakdownLine[] = [];
 
-  if (SITUATION_HIGH.has(lead.situation)) {
+  if (!lead.situation) {
+    lines.push({ label: "Situation: not yet known", points: 0 });
+  } else if (SITUATION_HIGH.has(lead.situation)) {
     lines.push({ label: `Situation: ${lead.situation}`, points: weights.situationHigh });
   } else if (SITUATION_MID.has(lead.situation)) {
     lines.push({ label: `Situation: ${lead.situation}`, points: weights.situationMid });

@@ -163,4 +163,20 @@ test("RLS + scoring", { skip: !dbAvailable() && "no local Postgres reachable" },
     assert.equal(bucket, "nurture");
     assert.equal(flaggedSpam, "t");
   });
+
+  await t.test("missed-call-shaped insert (phone only, no email/address/situation/consent) succeeds", () => {
+    const out = runAsSuperuser(`
+      insert into leads (tenant_id, source, name, phone)
+      values ('${tenantA}', 'missed-call', 'Missed Call Test', '555-2222')
+      returning id, score, bucket, flagged_spam;
+    `);
+    const [, score, bucket, flaggedSpam] = csvRows(out)[0];
+    // No situation/timeline means no bonus from either — the only points
+    // come from having a phone number (+10, per this test file's tenant
+    // scoring config). The real point of this test is that the insert
+    // succeeds at all with those columns omitted.
+    assert.equal(score, "10");
+    assert.equal(bucket, "nurture");
+    assert.equal(flaggedSpam, "f");
+  });
 });

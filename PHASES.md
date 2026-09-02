@@ -223,6 +223,95 @@ Also manually verified this phase:
   missing, `/v/[slug]` deferred to Phase 3, in-memory rate limiting) are
   still open — nothing in Phase 2 touched them.
 
-**Next up — Phase 3:** auto-reply (Resend), the 7am morning-briefing cron,
-Twilio missed-call text-back + STOP suppression, video pages + OG
-generation, and the nurture-bucket draft email.
+## Phase 3 — Automation ✅ done
+
+**What's done:**
+- `lib/resend.ts` + `lib/twilio.ts` — graceful-degradation send wrappers
+  matching the established pattern (real send when creds present,
+  console log otherwise). `lib/twilio.ts` also verifies inbound webhook
+  signatures via `X-Twilio-Signature` (§8).
+- `lib/email/templates.ts` — auto-reply (plain-text ONLY, per §3's
+  deliverability rule), morning briefing (text + minimal HTML for
+  tap-to-call links), nurture check-in (draft, manual send only).
+  Hand-written functions, not the react-email package (see
+  `DECISIONS.md`).
+- Auto-reply wired into `app/api/leads/route.ts`: fires on a real,
+  non-spam insert, logs to `outreach_log` with `ai_generated: true,
+  disclosed_ai: false` per §7.4's exact spec.
+- `app/api/cron/briefing/route.ts` + `vercel.json` — daily briefing,
+  `CRON_SECRET`-protected via the `Authorization: Bearer` header Vercel
+  itself sends for scheduled cron requests. Iterates every tenant row
+  (not just the one this deployment's `NEXT_PUBLIC_TENANT` points at),
+  future-proofed for Phase 4.
+- `app/api/webhooks/twilio/route.ts` + `lib/missed-call.ts` — missed-call
+  text-back on `CallStatus=no-answer`: creates a `source='missed-call'`
+  lead, sends exactly one compliant text (consent_at stays NULL), checks
+  STOP suppression first (`lib/suppression.ts`, built on `outreach_log`
+  since §5's schema has no dedicated opt-out table). `/dev/simulate-missed-call`
+  and `/dev/stop-simulator` exercise the same logic without real Twilio
+  creds — both self-disable once Twilio *is* configured, so they can't
+  create fake leads or fire real texts in production.
+- `/v/[slug]` video pages + `opengraph-image.tsx` (next/og's built-in
+  Satori wrapper, no new dependency): noindex, excluded from sitemap,
+  robots-disallowed. "Generate video page" on the lead-detail screen now
+  actually creates the slug and defaults to the tenant's previously-unused
+  `public/media/hero.mp4`; an agent can paste a real recorded video URL
+  afterward.
+- NURTURE-bucket leads get a "Send check-in email" button on lead detail
+  — manual only, no automated sequence, hidden when the lead has no
+  email on file.
+- **Real bug caught and fixed while checking Vercel deploy-readiness:**
+  every automated send was using the operator's Gmail address as the
+  Resend `from` — which Resend rejects, since `from` must be on a
+  domain you've verified with them. Added `lib/email/from-address.ts`
+  and wired the already-documented-but-unused `RESEND_FROM_EMAIL` env
+  var into all three send sites.
+- Fixed a real schema gap Phase 2 didn't anticipate: `email`,
+  `property_address`, `situation`, `consent_text`, `consent_at` are now
+  nullable on `leads` (new migration, not an edit to Phase 2's) — the
+  missed-call ingest path only ever has a phone number.
+- Full "Deploying to Vercel" README section: env var checklist, cron
+  registration, the `CRON_SECRET` convention, and the known in-memory
+  rate-limiting caveat under serverless horizontal scaling.
+
+**How to test it:**
+```bash
+npm install
+npm run lint && npm run typecheck && npm run copy-lint && npm run build
+npm test              # 11/11 passing, including the new missed-call-shaped
+                       # insert test
+npm run dev
+```
+Manually verified this phase:
+- `/dev/simulate-missed-call` end-to-end via a real (non-JS) form POST
+  replicating exactly what a browser sends for a Server Action: `303`
+  redirect, `[missed-call:stub] would create lead + text` logged
+  (Supabase unconfigured in this environment).
+- `/api/cron/briefing`: `401` with no/wrong `Authorization` header,
+  correctly rejecting unauthenticated cron-route access.
+- `/v/nonexistent` → `404`; `/robots.txt` disallows `/v/`, `/dashboard`,
+  `/leads/`, `/settings`, `/login`, `/api`, and `/dev/` (the last four
+  disallow entries were a gap from Phase 1/2, fixed here).
+- Full Lighthouse CI + the RLS/scoring test suite re-run clean after
+  every change this phase, not just at the end.
+
+**Known gaps / honestly not tested:**
+- **No live Resend or Twilio send was made** — no API keys exist in this
+  environment. Every send path is verified through its graceful-
+  degradation (stub) branch, the same limitation as Phase 2's Supabase
+  gap. Before trusting this in production: send one real auto-reply, one
+  real morning briefing, and place one real test call that goes to
+  voicemail against a live Twilio number.
+- The morning-briefing cron's UTC time is a fixed offset from Pacific
+  time, not DST-aware — up to an hour early in winter, never late (see
+  `DECISIONS.md`).
+- Real `logo.png` and a real headshot photo are still outstanding (same
+  gap since Phase 0/1) — the video page's agent-photo placeholder reuses
+  the press-kit "initials" treatment for the same reason.
+- Rate limiting is still in-memory/per-instance — flagged again in this
+  phase's README Vercel section since it matters more once actually
+  deployed to serverless infrastructure.
+
+**Next up — Phase 4:** host→tenant resolution in `middleware.ts`,
+`scripts/make-tenant.mjs`, a second demo tenant proving zero Harbison
+strings leak through, and the operator handbook (`OPERATOR.md`).

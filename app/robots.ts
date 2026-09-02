@@ -18,7 +18,7 @@ const AI_USER_AGENTS = [
   "CCBot",
 ];
 
-const DISALLOW = ["/v/", "/dashboard", "/api"];
+const DISALLOW = ["/v/", "/dashboard", "/leads/", "/settings", "/login", "/api", "/dev/"];
 
 export default function robots(): MetadataRoute.Robots {
   const tenant = getTenant();
