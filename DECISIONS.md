@@ -3,6 +3,107 @@
 Judgment calls made where the spec was silent or ambiguous, newest first.
 Each entry: what was decided, why, and what would change it.
 
+## Phase 1
+
+### Lead route handler ships without persistence (Phase 2 stub)
+§10 explicitly scopes Supabase migrations and "form→DB wired" to Phase 2,
+so `app/api/leads/route.ts` implements the full request-side pipeline
+(honeypot, time-trap, UTM/referrer capture, consent capture, rate
+limiting) but logs the would-be row to console instead of inserting it —
+clearly marked `[leads:stub]` and grep-able. Phase 2 swaps the `console.log`
+for a `supabase.from("leads").insert(...)` call; scoring itself is never
+computed here — that's the Postgres trigger `fn_score_lead()`'s job, so
+this route never duplicates that logic even provisionally.
+
+### Time-trap (`opened_at`) is progressive enhancement, not a hard gate
+§3 requires public pages to be static-first and forms to work with JS
+disabled; §7.2 requires a "server-side time-trap via hidden opened_at."
+Those two requirements are in tension: a force-static page can't stamp a
+per-request server timestamp at render time. Resolved as: a hidden
+`opened_at` input starts empty and is filled by a small inline script (pure
+progressive enhancement, no hydration) on page load. The route handler
+computes `form_seconds_open` server-side from that value at submit time —
+still a server-side calculation, just fed a client-supplied timestamp. When
+`opened_at` is missing (JS disabled), `form_seconds_open` is `null` and the
+&lt;3-second spam heuristic is skipped entirely rather than penalizing
+legitimate no-JS submitters. The honeypot field still catches basic bots
+regardless of JS.
+
+### UTM capture: hidden fields + script, referrer always server-side
+Force-static pages can't read their own request's query string at render
+time, so UTM params can't be captured purely server-side without making
+every page dynamic (which would break the static-first hard rule). UTM
+hidden fields are populated client-side from `location.search` by the same
+inline script as the time-trap; the HTTP `Referer` header is captured
+unconditionally server-side regardless of JS. A no-JS submission from a
+UTM-tagged link therefore loses the specific `utm_source`/`medium`/
+`campaign` values but keeps referrer-based attribution.
+
+### Rate limiting is in-memory (Phase 1), durable rate limiting deferred
+`lib/rate-limit.ts` is a process-local `Map`-based 5/hour-per-IP limiter.
+It resets on cold start and doesn't share state across serverless
+instances — a real gap, not swept under the rug. Once the `leads` table
+exists (Phase 2), the correct home for this is a query against recent rows
+by IP, which is durable and consistent with how the rest of the anti-spam
+logic (honeypot, time-trap) ultimately lands in that table. Tracked here
+explicitly rather than presented as a finished feature.
+
+### Situation dropdown: full list every page, per-page default only
+§2 says the four pillars (BUILD/UPDATE/INVEST/FLIP) structure "the ...
+lead-intent dropdown." Read literally as "restrict the dropdown to that
+page's pillar," a visitor on `/sell` who is actually an investor would
+have no way to select the right option. Instead, `LeadForm` always offers
+the full `SITUATION_OPTIONS` list (grouped by Sell/Build/Land via
+`<optgroup>`) and just sets a sensible pre-selected default per page
+(`/sell` → sell-inherited, `/build` → build, `/land` → land, home →
+blank). Matches the spirit of "pre-set" without trapping a visitor in the
+wrong bucket.
+
+### Small brass text on white/light backgrounds swapped for navy + brass underline
+Lighthouse's accessibility audit failed `color-contrast` on brass
+(`#C9A24B`) used as small uppercase eyebrow text on white cards (home
+service cards, press talking-points cards, the one-sheet's pillar labels)
+— brass reads fine on navy but doesn't meet 4.5:1 against white. Per §2,
+brass is an accent/highlight color, "never large fills except buttons," so
+keeping it as decorative (a `border-b-2 border-brass` underline) while
+switching the text itself to navy preserves the brand accent without
+failing accessibility. Also bumped one `text-navy/60` label (home page
+proof-stat captions) to `/70` to match the opacity already used safely
+elsewhere on the site. Verified via a full Lighthouse CI run after the fix:
+accessibility scored 1.0 on all six audited pages.
+
+### `/privacy` and `/terms` added even though §4's page tree doesn't list them
+§4's public route list doesn't include `/privacy` or `/terms`, but §8 does
+require them ("Compliance is a release blocker") as plain-language pages
+linked from the footer. Built now rather than deferred, since compliance
+requirements are explicitly not optional. Both are static, footer-linked,
+and carry the same JSON-LD identity/breadcrumb nodes as every other public
+page for consistency.
+
+### `/v/[slug]` (personalized video pages) deferred to Phase 3
+§10 explicitly scopes "video pages + OG generation" to Phase 3, and the
+route's real content (lead name, property address, agent photo) depends on
+the `leads` table that doesn't exist until Phase 2. Building a shell now
+against fake data would just need to be rebuilt once real data exists.
+`app/robots.ts` already disallows `/v/` for all crawlers now, ahead of the
+route existing, since that's pure static config with no data dependency.
+
+### Press one-sheet: print CSS, not a generated PDF file
+§7.6 asks for a "downloadable one-sheet PDF (print CSS)" — read as an
+instruction to build it as print-optimized HTML/CSS rather than to add a
+PDF-generation library (which would be a new dependency requiring
+justification per the hard rules, for a job the browser's native print
+dialog already does). `/press#one-sheet` plus a "Print / save as PDF"
+button (`window.print()`) and a `.no-print` / `@media print` rule set in
+`globals.css` hides everything else on the page, leaving a clean one-pager
+to print or save. No new dependency added.
+
+### Headshot: styled placeholder, not a missing-image `<img>`
+No headshot photo has been provided (same situation as the logo — see the
+Phase 0 entries above). Rather than reference a nonexistent image file,
+`/press`'s one-sheet renders a navy box with brass "NH" initials.
+**TODO(operator):** provide a real headshot photo.
+
 ## Phase 0
 
 ### Next.js scaffolded by hand, not `create-next-app`

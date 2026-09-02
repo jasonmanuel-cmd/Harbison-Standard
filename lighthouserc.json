@@ -4,7 +4,14 @@
       "staticDistDir": null,
       "startServerCommand": "npm run start -- -p 4173",
       "startServerReadyPattern": "Ready in",
-      "url": ["http://localhost:4173/"]
+      "url": [
+        "http://localhost:4173/",
+        "http://localhost:4173/sell",
+        "http://localhost:4173/build",
+        "http://localhost:4173/land",
+        "http://localhost:4173/press",
+        "http://localhost:4173/faq"
+      ]
     },
     "assert": {
       "assertions": {

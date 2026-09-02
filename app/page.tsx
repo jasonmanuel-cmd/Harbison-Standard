@@ -1,32 +1,27 @@
+import Link from "next/link";
 import { getTenant } from "@/tenants";
-import { Wordmark } from "@/components/Wordmark";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { LeadForm } from "@/components/LeadForm";
 import { BenchmarkMark } from "@/components/BenchmarkMark";
+import { JsonLdScript } from "@/components/JsonLdScript";
+import { buildGraph } from "@/lib/jsonld";
 
-// Phase 0 scaffold page: proves the tenant config, brand tokens, and
-// wordmark/mark components render correctly. Full hero copy, service
-// cards, proof strip, FAQ, and the lead form land in Phase 1 (§7.1).
 export const dynamic = "force-static";
 
 export default function HomePage() {
   const tenant = getTenant();
+  const teaserFaq = tenant.faq.slice(0, 3);
 
   return (
     <>
-      <header className="bg-navy">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-          <Wordmark tenant={tenant} variant="light" />
-          <nav className="hidden gap-6 text-sm text-steel md:flex">
-            {tenant.nav.map((link, i) => (
-              <span key={link.href} className="flex items-center gap-6">
-                {i > 0 && <span className="text-brass">◆</span>}
-                <a href={link.href} className="hover:text-white">
-                  {link.label}
-                </a>
-              </span>
-            ))}
-          </nav>
-        </div>
-      </header>
+      <JsonLdScript
+        graph={buildGraph(tenant, {
+          breadcrumbs: [{ name: "Home", path: "/" }],
+          faq: true,
+        })}
+      />
+      <Header tenant={tenant} />
 
       <section className="relative overflow-hidden bg-navy">
         <BenchmarkMark className="pointer-events-none absolute -right-16 top-1/2 h-96 w-96 -translate-y-1/2 text-brass opacity-10" />
@@ -49,19 +44,77 @@ export default function HomePage() {
             >
               {tenant.copy.heroPrimaryCta}
             </a>
-            <a
+            <Link
               href="/build"
               className="border border-steel px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white"
             >
               {tenant.copy.heroSecondaryCta}
-            </a>
+            </Link>
           </div>
         </div>
       </section>
 
-      <footer className="bg-navy-deep py-8 text-center text-sm text-steel">
-        <p>{tenant.contact.complianceFooter}</p>
-      </footer>
+      <section className="border-y border-navy/10 bg-paper py-10">
+        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-6 px-6 text-center md:grid-cols-4">
+          {tenant.copy.proofStats.map((stat) => (
+            <div key={stat.label}>
+              <p className="font-serif text-3xl text-navy">{stat.value}</p>
+              <p className="mt-1 text-sm text-navy/70">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="bg-paper py-20">
+        <div className="mx-auto max-w-5xl px-6">
+          <h2 className="text-center font-serif text-3xl text-navy">
+            Three ways to work together
+          </h2>
+          <div className="mt-12 grid gap-8 md:grid-cols-3">
+            {tenant.copy.services.map((service) => (
+              <Link
+                key={service.href}
+                href={service.href}
+                className="block border border-navy/10 bg-white p-8 hover:border-brass"
+              >
+                <p className="inline-block border-b-2 border-brass font-serif text-xs font-semibold uppercase tracking-[0.3em] text-navy">
+                  {service.pillar}
+                </p>
+                <h3 className="mt-3 font-serif text-2xl text-navy">
+                  {service.title}
+                </h3>
+                <p className="mt-3 text-navy/70">{service.description}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-parchment py-20">
+        <div className="mx-auto max-w-3xl px-6">
+          <h2 className="font-serif text-3xl text-navy">Frequently asked</h2>
+          <div className="mt-8 space-y-4">
+            {teaserFaq.map((entry) => (
+              <details key={entry.id} className="border border-navy/10 bg-white p-5">
+                <summary className="cursor-pointer font-semibold text-navy">
+                  {entry.question}
+                </summary>
+                <p className="mt-3 text-navy/70">{entry.answer}</p>
+              </details>
+            ))}
+          </div>
+          <Link
+            href="/faq"
+            className="mt-6 inline-block font-semibold text-navy underline decoration-brass"
+          >
+            See the full FAQ →
+          </Link>
+        </div>
+      </section>
+
+      <LeadForm source="home" />
+
+      <Footer tenant={tenant} />
     </>
   );
 }

@@ -5,3 +5,16 @@
 body {
   background-color: #f7f5ef; /* paper */
 }
+
+/* Press one-sheet (§7.6): printing /press hides everything except the
+   #one-sheet block, so "Print / save as PDF" produces a clean one-pager
+   instead of the full marketing page. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .one-sheet {
+    padding: 0 !important;
+  }
+}
