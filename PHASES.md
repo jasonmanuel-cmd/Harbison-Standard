@@ -141,7 +141,88 @@ that lands with Phase 2's `npm test`):
 - Rate limiting is in-memory and per-instance (Phase 1 stub) — see
   `DECISIONS.md`.
 
-**Next up — Phase 2:** Supabase migrations (full §5 schema + RLS +
-`fn_score_lead()` trigger), seed data, wire `app/api/leads/route.ts` to
-actually insert, RLS proof test, and the CRM dashboard (auth, HOT/WARM/
-NURTURE board, lead detail, demo mode).
+## Phase 2 — Data ✅ done
+
+**What's done:**
+- `supabase/migrations/` — three migrations implementing §5's schema
+  exactly: `tenants`, `profiles`, `leads` (with generated `bucket` and
+  `intent_pillar` columns), `outreach_log`; the full RLS matrix (anon
+  insert-only on `leads`, nothing else anywhere; authenticated full CRUD
+  scoped to their own tenant via a `current_tenant_id()` helper); and
+  `fn_score_lead()`, a `BEFORE INSERT OR UPDATE` trigger that's the single
+  source of truth for scoring regardless of ingest path, reading weights
+  from `tenants.config->'scoring'` (tunable later without a migration).
+- `supabase/seed.sql` — 8 fake DEMO leads (3 HOT / 3 WARM / 2 NURTURE,
+  math verified against the actual trigger, not just hand-calculated) plus
+  2 `outreach_log` rows, safe to re-run.
+- `tests/rls.test.mjs` + `tests/helpers/db.mjs` + `tests/fixtures/auth-shim.sql`
+  — 10 passing tests against a **real local Postgres**, proving: anon can
+  insert but has zero read/write access anywhere else (including via
+  `RETURNING` — see the real RLS+RETURNING interaction this suite
+  actually caught, in `DECISIONS.md`); tenant isolation between two
+  tenants; `sell-probate` + `asap` + phone scores ≥80/HOT; a form filled
+  in under 3 seconds forces score 0 and `flagged_spam: true`.
+- `lib/supabase/{admin,server,client}.ts` — service-role, cookie-bound,
+  and browser Supabase clients, each returning `null` when unconfigured
+  so every caller can degrade gracefully instead of crashing.
+- `app/api/leads/route.ts` now does a real insert via the service-role
+  client (resolving `tenant_id` by querying `tenants` by slug — leads
+  never trusted a hardcoded UUID), falling back to the same Phase 1
+  console-log stub when Supabase isn't configured. Verified both paths.
+- Magic-link auth: `/login`, `/auth/callback`, `/auth/signout`, and
+  `middleware.ts` gating `/dashboard`, `/leads/*`, `/settings` (redirects
+  to `/login` when unauthenticated or unconfigured).
+- CRM dashboard: `/dashboard` (search + status/source/pillar filters,
+  HOT/WARM/NURTURE columns, DEMO badges), `/leads/[id]` (full fields,
+  score breakdown, outreach timeline, status control, notes, a
+  clearly-disabled "generate video page" stub for Phase 3), `/settings`
+  (working display-name edit; notification prefs are a placeholder — no
+  schema exists yet for them, see `DECISIONS.md`).
+- `?demo=1` works without login on `/dashboard` and `/leads/[id]` —
+  verified this can only ever surface rows seed.sql marks as demo, never
+  real lead data, regardless of what a request tries to filter by.
+
+**How to test it:**
+```bash
+npm install
+npm run lint && npm run typecheck && npm run copy-lint && npm run build
+npm test              # RLS + scoring proof tests — see README's
+                       # "Running the test suite" for the local-Postgres
+                       # setup this needs
+npm run dev
+```
+Also manually verified this phase:
+- `npm test` → 10/10 passing from a clean `resetTestDb()` each run.
+- `psql -f supabase/seed.sql` against the test DB → exactly 3 HOT / 3
+  WARM / 2 NURTURE, matching the hand-computed weights.
+- `/dashboard` (no auth, no Supabase config) → `307` to `/login`.
+- `/dashboard?demo=1` (no Supabase config) → `200`, renders the "CRM
+  isn't connected to a database yet" message instead of crashing.
+- `/settings` (no auth) → `307` to `/login`.
+- Full Lighthouse CI re-run after this phase's changes (public pages
+  weren't touched, but the shared tenant-config rename was worth
+  re-checking): still performance ≥0.98, accessibility 1.0,
+  best-practices 0.96, SEO 1.0 on all six pages.
+
+**Known gaps / honestly not tested:**
+- **No live HTTP round-trip against a real PostgREST-backed Supabase
+  project** — this session has no Docker daemon, so there's no way to run
+  `supabase start` or stand up PostgREST locally. Everything DB-shaped was
+  proven against raw Postgres directly (`tests/rls.test.mjs`) and the
+  route/dashboard code was verified via its graceful-degradation path
+  (Supabase unconfigured). **The operator should smoke-test the actual
+  `app/api/leads/route.ts` insert and the dashboard against a real hosted
+  Supabase project** (or `supabase start` with Docker) before trusting
+  this in production — see README's "Setting up Supabase."
+- Notification preferences on `/settings` are UI-only; no schema exists
+  for them yet (§5's `profiles` table doesn't have a settings column, and
+  the migrations create "exactly" what §5 specifies). Revisit alongside
+  Phase 3's morning-briefing email, which is what these prefs would
+  actually control.
+- All Phase 1 known gaps (hero video unwired, real logo/headshot still
+  missing, `/v/[slug]` deferred to Phase 3, in-memory rate limiting) are
+  still open — nothing in Phase 2 touched them.
+
+**Next up — Phase 3:** auto-reply (Resend), the 7am morning-briefing cron,
+Twilio missed-call text-back + STOP suppression, video pages + OG
+generation, and the nurture-bucket draft email.

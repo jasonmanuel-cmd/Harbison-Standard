@@ -77,8 +77,15 @@ export interface TenantConfig {
   nav: NavLink[];
   copy: TenantCopy;
   faq: FaqEntry[];
-  /** Tunable scoring weights consumed by fn_score_lead() (§5), mirrored
-   *  here so the CRM can eventually read/edit them from one place. */
+  /**
+   * Initial scoring weights (§5). The live source of truth at request
+   * time is the `config->'scoring'` jsonb on this tenant's row in the
+   * `tenants` table — `fn_score_lead()` reads it there on every insert,
+   * so weights are tunable from the CRM later without a new migration.
+   * This object is only the seed value written into that column when the
+   * tenant row is created (see supabase/seed.sql); editing it here after
+   * that has no runtime effect until the DB row is updated too.
+   */
   scoring: {
     situationHigh: number; // sell-probate | sell-inherited | sell-nod
     situationMid: number; // land | sell-landlord
@@ -86,7 +93,8 @@ export interface TenantConfig {
     timelineAsap: number;
     timelineSoon: number; // 1-3months
     hasPhone: number;
-    engagedFormSeconds: number;
+    engagementThresholdSeconds: number; // form must stay open >= this long...
+    engagementBonus: number; // ...to earn this many points
     minFormSeconds: number; // below this -> forced 0 + flagged_spam
   };
 }

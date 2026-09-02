@@ -2,19 +2,29 @@ import { NextResponse } from "next/server";
 import { getTenant } from "@/tenants";
 import { CONSENT_TEXT, HONEYPOT_FIELD, TIME_TRAP_FIELD } from "@/lib/situations";
 import { isRateLimited } from "@/lib/rate-limit";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 // Lead ingest (§7.2). Accepts a plain `<form method="POST">` submission
 // (no-JS path -> 303 redirect to /thank-you) and the same endpoint hit
 // via fetch() from LeadForm's progressive-enhancement script (JS path ->
 // JSON response, no redirect).
 //
-// Phase 1 scope: full request-side pipeline (honeypot, time-trap, UTM +
-// referrer capture, consent capture, rate limiting) with NO persistence
-// yet — there is no `leads` table until the Phase 2 Supabase migration.
-// The would-be row is logged to console, clearly marked, so this is easy
-// to grep for and swap once Phase 2 lands. Scoring itself is computed by
-// the Postgres trigger fn_score_lead() (§5), not here — this route never
-// duplicates that logic.
+// Full request-side pipeline (honeypot, time-trap, UTM + referrer
+// capture, consent capture, rate limiting) runs unconditionally. The
+// insert itself uses the service-role client (§5: "used only
+// server-side") so it bypasses RLS as a trusted write — the anon
+// insert-only policy stays in place as the safety net for anyone who
+// bypasses this route and hits Supabase directly. Deliberately never
+// chains `.select()` after `.insert()`; see DECISIONS.md's Phase 2 entry
+// on RLS + RETURNING for why that's a hard rule, not a style choice.
+// Scoring itself is computed entirely by the Postgres trigger
+// fn_score_lead() (§5) — this route never duplicates that logic, it only
+// supplies raw inputs.
+//
+// When Supabase env vars aren't set (local dev with no project
+// configured yet), falls back to the same console-log stub Phase 1
+// shipped — the lead still "saves" (to the log) and the user still sees
+// success, consistent with the graceful-degradation rule in §3.
 
 function wantsJson(request: Request): boolean {
   return (request.headers.get("accept") ?? "").includes("application/json");
@@ -85,8 +95,7 @@ export async function POST(request: Request) {
     formSecondsOpen !== null && formSecondsOpen < tenant.scoring.minFormSeconds;
   const flaggedSpam = isHoneypotTriggered || isTooFast;
 
-  const lead = {
-    tenant_id: tenant.slug,
+  const leadInput = {
     source,
     name,
     phone,
@@ -108,10 +117,43 @@ export async function POST(request: Request) {
     },
   };
 
-  // TODO(Phase 2): replace with `supabase.from("leads").insert(lead)`.
-  // fn_score_lead() (trigger) computes score/bucket server-side on insert
-  // — never duplicate that scoring logic in this route handler.
-  console.log("[leads:stub] would insert lead", JSON.stringify(lead));
+  const admin = getSupabaseAdmin();
+
+  if (!admin) {
+    console.log(
+      "[leads:stub] Supabase not configured — would insert lead",
+      JSON.stringify({ tenant_slug: tenant.slug, ...leadInput }),
+    );
+  } else {
+    const { data: tenantRow, error: tenantError } = await admin
+      .from("tenants")
+      .select("id")
+      .eq("slug", tenant.slug)
+      .single();
+
+    if (tenantError || !tenantRow) {
+      // No tenant row for this slug yet — e.g. Supabase is configured
+      // but the operator hasn't provisioned their tenant row (see
+      // README). Never lose the lead over this: fall back to the same
+      // stub log Phase 1 used, and let the response continue normally.
+      console.error(
+        `[leads] no tenant row found for slug "${tenant.slug}" — falling back to stub log`,
+        tenantError,
+      );
+      console.log(
+        "[leads:stub] would insert lead",
+        JSON.stringify({ tenant_slug: tenant.slug, ...leadInput }),
+      );
+    } else {
+      const { error: insertError } = await admin
+        .from("leads")
+        .insert({ tenant_id: tenantRow.id, ...leadInput });
+
+      if (insertError) {
+        console.error("[leads] insert failed", insertError);
+      }
+    }
+  }
 
   if (wantsJson(request)) {
     return NextResponse.json({ ok: true });

@@ -124,7 +124,8 @@ export const harbison: TenantConfig = {
     timelineAsap: 30,
     timelineSoon: 15,
     hasPhone: 10,
-    engagedFormSeconds: 10,
+    engagementThresholdSeconds: 8,
+    engagementBonus: 10,
     minFormSeconds: 3,
   },
 };

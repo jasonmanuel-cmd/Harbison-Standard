@@ -3,6 +3,145 @@
 Judgment calls made where the spec was silent or ambiguous, newest first.
 Each entry: what was decided, why, and what would change it.
 
+## Phase 2
+
+### `@supabase/supabase-js` pinned to 2.50.x, not latest (2.113.x)
+Latest `@supabase/supabase-js` (2.113.0) ships a very recent internal
+rewrite of its generic type system (a vendored, restructured
+`postgrest-js` with `GenericSchema`/`GenericTable`/`Relationships`/
+`__InternalSupabase` machinery). A hand-written minimal `Database` type
+(`lib/supabase/types.ts` — reasonable here since there's no live project
+to run `supabase gen types typescript` against yet) hit a generic
+resolution bug in that version: `.from("leads").insert(...)` typed the
+`values` parameter as `never[]` regardless of how the `Database` type was
+shaped, traced through `SupabaseClient`'s `Schema`/`ClientOptions`
+conditional-type defaults but not fully root-caused — it's new enough
+(shipped after this session's knowledge) that it isn't a documented,
+searchable issue yet. Pinned to 2.50.5 instead (paired with
+`@supabase/ssr` 0.5.2, its contemporary), which depends on the older,
+stable `postgrest-js` 1.x typing pattern — the one nearly every
+Supabase+Next.js guide and the official docs still demonstrate. Same
+hand-written `Database` type works immediately with zero changes. If a
+future need justifies the newer major, re-verify this exact insert
+pattern against it first.
+
+### Kept `middleware.ts`, not Next 16's renamed `proxy.ts`
+`next build` warns that the `middleware.ts` file convention is deprecated
+in favor of `proxy.ts` (Next 16 renamed it, with a codemod available:
+`npx @next/codemod@canary middleware-to-proxy .`). §4 of the spec
+explicitly names this file `middleware.ts` (both for auth gating now and
+for Phase 4's host→tenant resolution), and the warning doesn't fail the
+build. Kept the spec's literal filename for now rather than deviate
+preemptively; re-run the codemod once `middleware.ts` support is actually
+removed, or sooner if it becomes a real CI failure instead of a warning.
+
+### `current_tenant_id()` helper instead of a custom-JWT-claims hook
+§5's RLS matrix describes authenticated access as "scoped tenant_id = jwt
+claim tenant." The literal mechanism that phrase points at — a Supabase
+Custom Access Token Hook that injects `tenant_id` into the JWT at login —
+is real but requires a manual, non-SQL step (enabling the hook in the
+Supabase Dashboard, since Auth Hooks aren't configurable purely via
+migration). Used a `SECURITY DEFINER` SQL function instead
+(`current_tenant_id()`, in the init-schema migration) that looks up the
+caller's tenant from `profiles` via `auth.uid()` on every RLS check. Same
+effective behavior — authenticated access scoped to the caller's tenant —
+zero Dashboard configuration required, and it can't go stale the way a
+baked-in JWT claim could if a profile's tenant ever changed without a
+re-login. Document the Custom Access Token Hook as an alternative in
+README if a future need (e.g., wanting tenant_id visible client-side
+without a query) makes it worth the tradeoff.
+
+### RLS proof discovered a real interaction: RETURNING needs a SELECT policy too
+While writing the RLS test suite, `anon`'s INSERT-only access to `leads`
+initially failed with "new row violates row-level security policy" even
+though the insert policy is `with check (true)`. Root cause, confirmed by
+testing with and without a trailing `RETURNING` clause: Postgres enforces
+the actor's SELECT policy on the row handed back by `INSERT ... RETURNING`
+(and `UPDATE ... RETURNING`), not just the INSERT policy's `WITH CHECK` —
+and raises an error rather than silently omitting the row. Since anon has
+no SELECT policy on `leads` at all, `RETURNING` after an anon insert must
+fail — which is actually the RLS matrix working exactly as specified
+("anon: INSERT-only... nothing else, nowhere"), not a bug to route around.
+**Real consequence for application code, not just the test:** the Phase 2
+Supabase client insert in `app/api/leads/route.ts` must never chain
+`.select()` after `.insert()` when running as anon/the public form path.
+`supabase-js`'s `.insert()` doesn't call `.select()` by default (it uses
+`Prefer: return=minimal`), so the route handler already avoids this by
+construction — but it's a sharp edge worth naming explicitly, since adding
+`.select()` later (e.g., to log the new lead's id) would silently turn
+every public form submission into a 401/RLS error in production.
+
+### Local test harness: a Postgres auth-schema shim, not the full Supabase CLI
+No Docker daemon is available in this environment (only the `docker`
+client, socket unreachable), so `supabase start` (which needs Docker
+Compose to run the full stack — Postgres, GoTrue, PostgREST, Studio) isn't
+usable here. A system Postgres 16 install was available instead. Since
+what Phase 2 actually needs to prove is the RLS matrix and the scoring
+trigger — not Auth/PostgREST/Studio — built `tests/fixtures/auth-shim.sql`,
+a minimal stand-in for just the pieces the real migrations assume exist
+(the `auth` schema, `auth.users`, `auth.uid()`, and the `anon`/
+`authenticated` roles with Supabase's default grants). It is explicitly
+never applied to a real Supabase project (which already has all of this)
+and is kept in `tests/fixtures/`, not `supabase/migrations/`, so it can
+never be mistaken for one. `npm test` runs against this local setup;
+`README.md` documents both this path and the full Supabase CLI (with
+Docker) as an alternative for anyone who has it available.
+
+### Tests shell out to `psql`, no new `pg` npm dependency
+`tests/helpers/db.mjs` drives Postgres via `execFileSync("psql", ...)`
+rather than adding the `pg` npm package. `psql` is already required
+tooling for anyone running Supabase migrations locally, so this adds zero
+new dependencies for a testing-only need — consistent with the hard rule
+against adding dependencies without justification.
+
+### Scoring trigger has no "un-flag as not-spam" path yet
+`fn_score_lead()` re-derives `flagged_spam` from `form_seconds_open` on
+every `UPDATE`, not just `INSERT` (so scoring stays consistent if those
+inputs ever change). One side effect: if an agent manually corrects a
+false-positive spam flag in the CRM, the trigger will re-flag it on the
+next update as long as the original `form_seconds_open` value is still
+below the threshold — there's no override column. Not required by any
+§9 acceptance test; noted here as a known limitation rather than
+building an unrequested override mechanism now.
+
+### `?demo=1` bypasses login, but only for hardcoded seed-marked rows
+§7.3 requires a `?demo=1` mode that "guarantees seeded data visible," and
+§9's acceptance test phrases it as something that just "shows 8 seeded
+DEMO leads" — with no mention of first logging in. Read together with the
+operator's stated need to run impressive live demos, treated this as
+intentionally unauthenticated: `middleware.ts` lets `?demo=1` through on
+`/dashboard` and `/leads/[id]` (never `/settings`, which has no demo
+meaning) without a session. The safety net: `lib/leads-query.ts`'s demo
+path always uses the service-role client with a **hardcoded** filter to
+rows carrying the `notes->>'demo'` marker — the only rows that ever get
+that marker are the ones `supabase/seed.sql` inserts. No request input
+(filters, search terms, IDs) can widen that query to real lead data, and
+demo-mode writes are refused at the application layer (the "Update"/"Save
+notes" controls don't even render) with RLS as the actual backstop (an
+unauthenticated request has no session, so the anon role would apply —
+and anon has no UPDATE policy on `leads`).
+
+### Notification preferences on /settings are UI-only for now
+§7.3 lists "/settings profile, notification prefs" as a required page.
+`profiles` has no column for notification settings, and §5's schema is
+explicit ("migrations must create exactly this") — adding one now would
+mean the schema no longer matches the spec's model. Since the one
+notification Phase 2 could plausibly control (the 7am morning briefing
+email) doesn't exist until Phase 3, `/settings` ships with a working
+profile section (editable `display_name`) and a notification-preferences
+section that's explanatory text only, not a persisted toggle. Revisit
+when Phase 3's briefing email lands — that's the natural point to decide
+where the preference lives (a new `profiles` column, or tenant-level
+config) and log it as its own decision then.
+
+### `update` situation carries no scoring bonus (matches §5's weight table literally)
+§5 lists weights for `sell-probate|sell-inherited|sell-nod` (+40),
+`land|sell-landlord` (+25), and `build|invest` (+20), but never mentions
+`update` even though it's a valid `situation` enum value. `fn_score_lead()`
+gives it 0 situation points, same as leaving it out of the CASE entirely —
+a lead can still reach WARM/HOT on timeline + phone + engagement alone.
+Revisit if the operator wants `update` leads weighted like `build`.
+
 ## Phase 1
 
 ### Lead route handler ships without persistence (Phase 2 stub)
