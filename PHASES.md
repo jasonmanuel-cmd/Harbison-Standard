@@ -39,8 +39,8 @@ commit, per the spec's stop-and-review gate.
 - `.env.example` — every env var the app will ever read, across all
   phases, each annotated with which phase wires it up.
 - `README.md`, `DECISIONS.md` (this phase's judgment calls), `PHASES.md`.
-- `public/media/kern-county-hero.mp4` — hero video asset preserved from
-  the session upload, not yet wired into any page (Phase 1 decision).
+- `public/media/hero.mp4` — hero video asset preserved from the session
+  upload, not yet wired into any page (Phase 1 decision).
 
 **How to test it:**
 ```bash

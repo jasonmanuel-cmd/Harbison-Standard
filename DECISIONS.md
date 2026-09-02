@@ -48,15 +48,24 @@ inline benchmark SVG until `tenant.brand.hasRealLogo` is flipped to `true`
 in `tenants/harbison.ts` after a real transparent PNG is dropped at
 `public/brand/logo.png`.
 **TODO(operator):** provide `logo.png` (full-res, transparent) and flip
-`hasRealLogo`.
+`hasRealLogo`. Still outstanding as of the operator's second asset drop
+(same session, later message): another chat-inline preview of the same
+logo was sent, but again as a rendered image in the conversation, not an
+attached file — there is nothing on disk to copy. A logo file only
+becomes usable here if it arrives as an actual upload (the same channel
+the hero videos came through, which do land as real files) or a URL.
 
-### Kern County hero video stored, not yet wired up
-A hero video (`Kern_County_Hero_1.mp4`) was attached to this session and
-copied to `public/media/kern-county-hero.mp4` purely so it survives past
-this ephemeral container — it is not referenced by any page yet. Wiring a
-video into the hero section is a Phase 1 design decision (autoplay/muted,
-poster frame, `<video>` vs. background embed, mobile data considerations)
-and will be made then, not smuggled in as a scaffold-time default.
+### Hero video stored, not yet wired up (superseded once already)
+A hero video was attached to this session and copied to
+`public/media/kern-county-hero.mp4` purely so it survives past this
+ephemeral container — it was not referenced by any page. A second, later
+message in the same session supplied a different video file explicitly
+labeled "hero" — replaced the first with it at `public/media/hero.mp4`
+(dropped the working-title `kern-county-` prefix now that this is the
+confirmed asset). Neither version has been wired into a page yet: doing so
+is a Phase 1 design decision (autoplay/muted, poster frame, `<video>` vs.
+background embed, mobile data/`prefers-reduced-motion` considerations) and
+will be made then, not smuggled in ahead of the phase gate.
 
 ### Nav pillars (BUILD/UPDATE/INVEST/FLIP) vs. page routes (Sell/Build/Land)
 §2 says the four pillars structure "the nav, the services section, and the
