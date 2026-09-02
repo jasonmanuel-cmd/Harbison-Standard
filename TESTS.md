@@ -62,16 +62,19 @@ but unexercised.
 
 **6. Twilio webhook simulation → lead + exactly one SMS logged; STOP
 suppresses future sends.**
-Status: verified via `/dev/simulate-missed-call`, which calls the exact
-same `lib/missed-call.ts` logic the real webhook does. `/dev/stop-simulator`
-logs an inbound STOP against a phone's most recent lead;
-`lib/suppression.ts`'s query is code-reviewable and follows the same
-`tests/rls.test.mjs` DB-testing pattern used elsewhere, but isn't yet a
-scripted `npm test` itself — it depends on the Supabase admin client
-(real HTTP calls to a PostgREST endpoint), which this environment can't
-run without Docker (see README). Signature verification
-(`lib/twilio.ts`'s `verifyTwilioSignature`) is unexercised against a real
-Twilio signature for the same reason.
+Status: Twilio itself isn't connected (operator request — see
+`DECISIONS.md`), so there's no real SMS send or real webhook signature to
+test against; that part of this acceptance test doesn't apply until a
+Twilio account exists. What's real and verified: `/dev/simulate-missed-call`
+exercises the exact same `lib/missed-call.ts` logic the eventual real
+webhook will call — lead creation and the STOP-suppression check both run
+for real against Supabase when configured, only the SMS send is mocked
+(`lib/twilio.ts`). `/dev/stop-simulator` logs an inbound STOP against a
+phone's most recent lead; `lib/suppression.ts`'s query is code-reviewable
+and follows the same `tests/rls.test.mjs` DB-testing pattern used
+elsewhere, but isn't yet a scripted `npm test` itself — it depends on the
+Supabase admin client (real HTTP calls to a PostgREST endpoint), which
+this environment can't run without Docker (see README).
 
 **7. copy-lint passes on all pages; intentionally adding "safe
 neighborhood" fails the build.**
@@ -138,7 +141,7 @@ hardcoded, not influenced by request input) is code-reviewable.
 | 3 | Tenant isolation | ✅ Automated |
 | 4 | Scoring → HOT bucket | ✅ Automated (scoring); dashboard manually verified |
 | 5 | Missing Resend key degrades gracefully | Manually verified |
-| 6 | Twilio webhook + STOP suppression | Manually verified (no live Twilio) |
+| 6 | Twilio webhook + STOP suppression | Twilio not connected (by request); flow verified against mock data |
 | 7 | copy-lint catches banned phrases | ✅ Automated |
 | 8 | Lighthouse ≥95 ×4 on 6 pages | ✅ Automated |
 | 9 | `/v/[slug]` noindex + excluded | Partially verified (no live Supabase) |
@@ -147,11 +150,15 @@ hardcoded, not influenced by request input) is code-reviewable.
 | 12 | `?demo=1` shows 8 leads | Manually verified (no live Supabase) |
 
 The common thread in every "manually verified, not automated" row: this
-build environment has no live Supabase/Resend/Twilio credentials and no
-Docker, so anything requiring a real PostgREST-backed database connection
-or a real third-party API call was proven through its graceful-
-degradation path and direct code review instead. **Before trusting this
+build environment has no live Supabase/Resend credentials and no Docker,
+so anything requiring a real PostgREST-backed database connection or a
+real third-party API call was proven through its graceful-degradation
+path and direct code review instead. Test 6 is different in kind, not
+degree — Twilio isn't a "no credentials in this environment" gap, it's
+not integrated at all right now, by request (see `DECISIONS.md`); the
+mock-data flow it does have is real and working. **Before trusting this
 in production, the operator should run the live-credential half of tests
-1, 5, 6, 9, and 12 against a real deployment** — send one real lead
-through the form, one real missed call, and check `/dashboard?demo=1`
-against the real seeded data.
+1, 5, 9, and 12 against a real deployment** — send one real lead through
+the form and check `/dashboard?demo=1` against the real seeded data —
+**and separately decide when to reconnect Twilio** (test 6 stays mock
+until then).

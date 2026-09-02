@@ -4,12 +4,6 @@ import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 
-function twilioConfigured(): boolean {
-  return Boolean(
-    process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE_NUMBER,
-  );
-}
-
 const RESULT_LABELS: Record<string, string> = {
   "not-configured": "Supabase isn't configured — nothing was saved. See README.md.",
   "no-lead": "No lead on file with that phone number yet — send a missed-call text first.",
@@ -65,40 +59,36 @@ export default async function StopSimulatorPage({
       <div className="mx-auto max-w-xl">
         <h1 className="font-serif text-2xl text-navy">Simulate a STOP reply</h1>
         <p className="mt-2 text-sm text-navy/60">
-          Dev-only tool (§8): logs an inbound STOP against a phone
-          number&rsquo;s most recent lead, then checks that suppression
-          holds on the next simulated missed call.
+          Twilio isn&rsquo;t connected yet (see /dev/simulate-missed-call).
+          This logs a real inbound STOP against a phone number&rsquo;s
+          most recent lead so you can confirm suppression actually holds
+          on the next simulated missed call — the same
+          <code className="mx-1">lib/suppression.ts</code>
+          check that will run against real inbound texts once Twilio is
+          connected. In production, Twilio&rsquo;s own Advanced Opt-Out
+          also intercepts real STOP replies before they reach this app;
+          this check is defense in depth, not the only line of defense.
         </p>
 
-        {twilioConfigured() ? (
-          <p className="mt-6 border border-navy/20 bg-parchment p-4 text-sm text-navy">
-            Twilio is configured on this deployment — this simulator is
-            disabled. In production, Twilio&rsquo;s own Advanced Opt-Out
-            handles real STOP replies before they reach this app.
+        <form action={simulateStop} className="mt-6 flex gap-3">
+          <input
+            type="tel"
+            name="phone"
+            required
+            placeholder="+16615550101"
+            className="flex-1 border border-navy/30 bg-white px-4 py-3 text-navy"
+          />
+          <button
+            type="submit"
+            className="bg-brass px-4 py-3 text-sm font-semibold uppercase tracking-wide text-navy-deep"
+          >
+            Simulate STOP
+          </button>
+        </form>
+        {result && (
+          <p className="mt-4 border border-navy/20 bg-white p-4 text-sm text-navy">
+            {RESULT_LABELS[result] ?? result}
           </p>
-        ) : (
-          <>
-            <form action={simulateStop} className="mt-6 flex gap-3">
-              <input
-                type="tel"
-                name="phone"
-                required
-                placeholder="+16615550101"
-                className="flex-1 border border-navy/30 bg-white px-4 py-3 text-navy"
-              />
-              <button
-                type="submit"
-                className="bg-brass px-4 py-3 text-sm font-semibold uppercase tracking-wide text-navy-deep"
-              >
-                Simulate STOP
-              </button>
-            </form>
-            {result && (
-              <p className="mt-4 border border-navy/20 bg-white p-4 text-sm text-navy">
-                {RESULT_LABELS[result] ?? result}
-              </p>
-            )}
-          </>
         )}
       </div>
     </div>

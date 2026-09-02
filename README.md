@@ -17,8 +17,12 @@ README documents what exists **today**; it will grow with each phase.
   values in components.
 - **Supabase** (Postgres + Auth + RLS) — data model, RLS, and the CRM
   dashboard shipped in Phase 2.
-- **Resend** (email) and **Twilio** (SMS/voice) — added Phase 3, with
-  graceful degradation to console logging when keys are absent.
+- **Resend** (email) — added Phase 3, with graceful degradation to
+  console logging when keys are absent.
+- **Twilio** (SMS/voice) — not connected yet, by request. The
+  missed-call text-back feature (§7.4) ships as a working example
+  against mock data (`lib/twilio.ts` always logs instead of sending) —
+  see `DECISIONS.md` for what re-adding a real Twilio account involves.
 
 See `DECISIONS.md` for every judgment call made where the spec was silent.
 
@@ -34,8 +38,9 @@ The public site works with zero configuration — `NEXT_PUBLIC_TENANT` and
 `NEXT_PUBLIC_SITE_URL` already have safe defaults in `.env.example`, and
 the lead form falls back to logging submissions to the console when
 Supabase isn't configured (same graceful-degradation pattern §3 requires
-for Resend/Twilio, extended here to local dev with no project set up
-yet). Resend/Twilio vars aren't read until Phase 3.
+for Resend, extended here to local dev with no project set up yet).
+Resend vars aren't read until Phase 3. There are no Twilio vars to set —
+see above.
 
 ## Setting up Supabase
 
@@ -163,10 +168,11 @@ questionnaire.
      console/`outreach_log` instead of sending (§3's graceful-degradation
      rule) — but nothing actually reaches a lead's inbox until they're
      configured.
-   - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER` —
-     from your Twilio console. Point that Twilio number's voice status
-     callback at `https://<your-domain>/api/webhooks/twilio`. Same
-     graceful degradation applies without these set.
+   - No Twilio variables to set — that integration isn't connected yet
+     by request (see `DECISIONS.md`). `/dev/simulate-missed-call` and
+     `/dev/stop-simulator` demonstrate the missed-call flow against mock
+     data on any deployment. When ready to connect a real Twilio number,
+     see the note at the top of `lib/twilio.ts`.
    - `CRON_SECRET` — generate with `openssl rand -hex 32`. Vercel
      automatically sends it as `Authorization: Bearer $CRON_SECRET` on
      the cron-triggered request defined in `vercel.json`, which is what

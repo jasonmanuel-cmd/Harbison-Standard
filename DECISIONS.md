@@ -3,6 +3,43 @@
 Judgment calls made where the spec was silent or ambiguous, newest first.
 Each entry: what was decided, why, and what would change it.
 
+## Post-Phase-3 (operator request)
+
+### Twilio pulled out entirely — missed-call flow now a mock-data example
+Operator request: no Twilio account exists yet, so stop pretending to
+integrate with one. Removed the `twilio` npm package entirely (and its
+~30 transitive deps) and rewrote `lib/twilio.ts` to a pure mock:
+`sendSms()` always logs and returns `{sent: false}`, no env vars read, no
+real API calls possible even by accident. `app/api/webhooks/twilio/route.ts`
+dropped its `X-Twilio-Signature` verification branch (nothing to verify
+without a real auth token) but kept the same URL and the same
+`CallStatus=no-answer` → `handleMissedCall()` logic — pointing a real
+Twilio number's voice status callback at this same route later is a
+credentials-and-a-few-lines change, not a rebuild.
+
+**What stayed real, deliberately:** `lib/missed-call.ts` (lead creation,
+tenant resolution), `lib/suppression.ts` (STOP-suppression query against
+`outreach_log`), and the `outreach_log` bookkeeping all still run for
+real against Supabase when it's configured — only the actual SMS send
+is mocked. This is what "an example of how it would work" means here:
+the CRM-side behavior (a missed call becomes a real lead you can see on
+the board) is functional today; only the "text actually leaves this
+building" step waits on a Twilio account.
+
+`/dev/simulate-missed-call` and `/dev/stop-simulator` dropped their
+"disable if Twilio is configured" gate — pointless now that Twilio can
+never be configured — and are the permanent, always-available way to
+exercise this feature until a real account exists. Their copy says so
+plainly rather than implying the feature is broken or half-built.
+
+**To reconnect a real Twilio account later:** `npm install twilio`,
+restore `lib/twilio.ts`'s real `sendSms`/`verifyTwilioSignature`
+implementation (this file's own comment points at git history for the
+prior version — the commit removing it is titled around "take Twilio
+out"), re-add the `X-Twilio-Signature` check to the webhook route, and
+set `TWILIO_ACCOUNT_SID`/`TWILIO_AUTH_TOKEN`/`TWILIO_PHONE_NUMBER`. No
+schema, RLS, or CRM changes needed — none of that was Twilio-specific.
+
 ## Phase 3
 
 ### CI never actually ran `npm test` until now

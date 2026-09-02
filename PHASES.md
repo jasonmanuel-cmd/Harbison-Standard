@@ -312,6 +312,23 @@ Manually verified this phase:
   phase's README Vercel section since it matters more once actually
   deployed to serverless infrastructure.
 
+### Post-Phase-3 update — Twilio pulled out (operator request)
+
+No Twilio account exists yet, so Twilio came back out: the `twilio` npm
+package is gone, `lib/twilio.ts` is now a pure mock (`sendSms()` always
+logs, never calls a real API), and the webhook route dropped signature
+verification since there's nothing to verify without real credentials.
+**Lead creation and STOP-suppression logic on a simulated missed call
+still run for real** against Supabase — only the SMS send itself is
+mocked. `/dev/simulate-missed-call` and `/dev/stop-simulator` are now the
+permanent way to exercise this feature (no more "disabled once Twilio is
+configured," since it never will be until reconnected) and say plainly
+in their own copy that this is example behavior pending a real account.
+Reconnecting later is additive — see `DECISIONS.md` for exactly what to
+restore. This also removed "No live Resend or Twilio send was made" as a
+Twilio-shaped gap above: there's no longer a Twilio integration to be
+gapped on, by design.
+
 **Next up — Phase 4:** host→tenant resolution in `middleware.ts`,
 `scripts/make-tenant.mjs`, a second demo tenant proving zero Harbison
 strings leak through, and the operator handbook (`OPERATOR.md`).
