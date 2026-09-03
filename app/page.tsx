@@ -77,26 +77,93 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-paper py-20">
+      <section className="bg-navy-deep py-20">
         <div className="mx-auto max-w-5xl px-6">
-          <h2 className="text-center font-serif text-3xl text-navy">
+          <h2 className="text-center font-serif text-3xl text-white">
             Three ways to work together
           </h2>
-          <div className="mt-12 grid gap-8 md:grid-cols-3">
-            {tenant.copy.services.map((service) => (
-              <Link
+
+          {/* CSS-only tabs: radio inputs drive :checked state via Tailwind's
+              peer/name selectors, no client JS. Unrolled (not .map()'d) on
+              purpose — Tailwind's JIT scanner needs each peer/peer-checked
+              class to appear as a literal string in this file; a template-
+              interpolated class name (e.g. `peer/${pillar}`) never gets
+              generated. Assumes exactly 3 services, same as the funnel
+              pages and nav elsewhere in this codebase. */}
+          <div className="relative mt-12">
+            <input
+              type="radio"
+              name="pillar"
+              id="pillar-tab-0"
+              defaultChecked
+              className="peer/tab0 sr-only"
+            />
+            <input
+              type="radio"
+              name="pillar"
+              id="pillar-tab-1"
+              className="peer/tab1 sr-only"
+            />
+            <input
+              type="radio"
+              name="pillar"
+              id="pillar-tab-2"
+              className="peer/tab2 sr-only"
+            />
+
+            <div
+              role="tablist"
+              aria-label="Ways to work with The Harbison Standard"
+              className="flex flex-wrap justify-center gap-2 border-b border-white/10"
+            >
+              {tenant.copy.services.map((service, index) => (
+                <label
+                  key={service.href}
+                  htmlFor={`pillar-tab-${index}`}
+                  className={`cursor-pointer border-b-2 border-transparent px-5 py-3 font-serif text-xs font-semibold uppercase tracking-[0.3em] text-steel transition-colors hover:text-white ${
+                    index === 0
+                      ? "peer-checked/tab0:border-brass peer-checked/tab0:text-brass"
+                      : index === 1
+                        ? "peer-checked/tab1:border-brass peer-checked/tab1:text-brass"
+                        : "peer-checked/tab2:border-brass peer-checked/tab2:text-brass"
+                  }`}
+                >
+                  {String(index + 1).padStart(2, "0")} · {service.title}
+                </label>
+              ))}
+            </div>
+
+            {tenant.copy.services.map((service, index) => (
+              <div
                 key={service.href}
-                href={service.href}
-                className="block border border-navy/10 bg-white p-8 hover:border-brass"
+                className={
+                  index === 0
+                    ? "hidden peer-checked/tab0:block"
+                    : index === 1
+                      ? "hidden peer-checked/tab1:block"
+                      : "hidden peer-checked/tab2:block"
+                }
               >
-                <p className="inline-block border-b-2 border-brass font-serif text-xs font-semibold uppercase tracking-[0.3em] text-navy">
-                  {service.pillar}
-                </p>
-                <h3 className="mt-3 font-serif text-2xl text-navy">
-                  {service.title}
-                </h3>
-                <p className="mt-3 text-navy/70">{service.description}</p>
-              </Link>
+                <div className="grid gap-6 border border-white/10 bg-white/[0.03] p-8 md:grid-cols-[auto,1fr] md:items-center md:gap-10 md:p-12">
+                  <p className="font-serif text-xs font-semibold uppercase tracking-[0.3em] text-brass">
+                    {service.pillar}
+                  </p>
+                  <div>
+                    <h3 className="font-serif text-3xl text-white">
+                      {service.title}
+                    </h3>
+                    <p className="mt-4 max-w-xl text-steel">
+                      {service.description}
+                    </p>
+                    <Link
+                      href={service.href}
+                      className="mt-6 inline-block border-b border-brass text-sm font-semibold uppercase tracking-wide text-brass hover:text-white"
+                    >
+                      Learn more →
+                    </Link>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
