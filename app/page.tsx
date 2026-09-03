@@ -27,7 +27,7 @@ export default function HomePage() {
 
       <section className="relative overflow-hidden bg-navy">
         <video
-          className="absolute inset-0 h-full w-full object-cover"
+          className="absolute inset-0 h-full w-full object-contain"
           autoPlay
           muted
           loop
