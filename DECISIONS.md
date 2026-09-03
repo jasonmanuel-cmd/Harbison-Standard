@@ -3,6 +3,50 @@
 Judgment calls made where the spec was silent or ambiguous, newest first.
 Each entry: what was decided, why, and what would change it.
 
+## Post-Phase-3 (home page: about, signup framing, sold-property portfolio)
+
+### "Mailing list" reused the existing lead-capture form, not a second system
+Operator asked for "very good filters and funnels to entice people to sign
+up with the mailing list." Built as a repositioned, better-framed instance
+of the existing `LeadForm` (moved up the page, new heading/subcopy via new
+`signupHeading`/`signupSubcopy` tenant-copy fields) rather than a second,
+parallel email-list system. The existing form's situation/timeline
+questions already are the segmentation ("filters") the operator described,
+and every submission already lands in the same `leads` table with the same
+scoring — a separate newsletter system would fragment the data model and
+require real ESP/unsubscribe infrastructure nothing here asked for. Only
+one `LeadForm` renders per page (it hardcodes `id="lead-form"`), so the
+old bottom-of-page instance was removed rather than duplicated.
+
+### Sold-property portfolio sourced from the operator's own Drive folder, verified before use
+Operator initially shared a Google Drive folder containing 7 property
+subfolders with photos and "info" docs. Before building anything, flagged
+that the docs read like scraped MLS/Compass comp research (generic
+Compass.com search-result links, `imgi_N_origin.webp` filenames matching
+a bulk image-downloader extension's naming convention) rather than
+confirmed closed deals with usable photo rights. Operator then explicitly
+confirmed: "a section that has the properties that he has sold" — treated
+as the business owner's authoritative call on his own transaction history
+and photo rights. Pulled 1-5 photos per property (all 7), preferring
+smaller file sizes where multiple were available (keeps `next/image`'s
+generated payload down), and wrote each `description` from the real
+`soldPrice`/specs in each property's info doc — not fabricated.
+
+### `SoldProperty.photos` typed as a non-empty tuple, not `string[]`
+`PortfolioSection` always renders `photos[0]` as the card's hero image.
+Typing it `[string, ...string[]]` instead of `string[]` makes "at least
+one photo" a compile-time guarantee instead of a runtime assumption —
+`tsc` caught the alternative (`photos[0]` typed as possibly `undefined`)
+immediately, which is exactly the kind of gap this type should close.
+
+### Portfolio image gallery is plain `next/image`, not a lightbox/carousel
+No new dependencies, no client JS. Each card shows one hero photo plus up
+to 4 small thumbnails, all static `<Image>` elements — `next/image`
+handles responsive `srcset` generation and format negotiation from the
+single source file, so raw 2048px source photos never ship at full size.
+Consistent with the pillar-tabs decision earlier in this file: motion/
+interactivity spent only where it doesn't cost the JS-optional guarantee.
+
 ## Post-Phase-3 (production deploy fix)
 
 ### `getTenant()` treated an empty-string env var as a real tenant slug

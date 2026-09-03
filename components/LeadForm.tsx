@@ -22,18 +22,18 @@ export function LeadForm({
   source,
   defaultSituation,
   heading = "Get a number on your property",
+  subcopy = "Tell me about the property. I’ll call you back — no obligation.",
 }: {
   source: "home" | "sell" | "build" | "land" | "press";
   defaultSituation?: string;
   heading?: string;
+  subcopy?: string;
 }) {
   return (
     <div id="lead-form" className="bg-parchment px-6 py-16">
       <div className="mx-auto max-w-xl">
         <h2 className="font-serif text-3xl text-navy">{heading}</h2>
-        <p className="mt-2 text-navy/70">
-          Tell me about the property. I&rsquo;ll call you back — no obligation.
-        </p>
+        <p className="mt-2 text-navy/70">{subcopy}</p>
 
         <form
           method="POST"

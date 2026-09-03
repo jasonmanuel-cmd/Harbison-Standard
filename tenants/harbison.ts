@@ -88,6 +88,115 @@ export const harbison: TenantConfig = {
         href: "/land",
       },
     ],
+
+    aboutHeading: "Who you're working with",
+    aboutBody:
+      "I'm a realtor, developer, and investor — not three different people you get passed between. When you call, you get me: the same person who negotiates the sale also walks the framing, pulls the comps, and signs the closing paperwork. I've spent over a decade doing all four in Kern County, and I bring the same direct approach to every property, whether it's a family home, a spec build, or a raw parcel someone inherited and doesn't know what to do with.",
+    aboutPhotoPath: "/brand/headshot.webp",
+
+    signupHeading: "Get on my radar",
+    signupSubcopy:
+      "Tell me what you're working with and where you're headed — selling, building, or evaluating land — and I'll route it straight to the right conversation. No obligation, no mass mailing list you have to unsubscribe from later.",
+
+    portfolioHeading: "Recent closings",
+    portfolioIntro:
+      "A sample of properties closed — sold outright, built, or brokered — with the actual address and numbers.",
+    soldProperties: [
+      {
+        id: "windsong-st",
+        address: "21213 Windsong St",
+        cityStateZip: "California City, CA 93505",
+        soldPrice: "$305,000",
+        specs: "3 bd · 3 ba · 1,591 sqft",
+        description:
+          "Two-story home overlooking the golf course, with an open kitchen and dining layout and a covered patio for outdoor living.",
+        photos: ["/portfolio/windsong-st/1.jpg"],
+      },
+      {
+        id: "sheridan-st",
+        address: "10618 Sheridan St",
+        cityStateZip: "California City, CA 93505",
+        soldPrice: "$345,000",
+        specs: "4 bd · 2 ba · 1,705 sqft",
+        description:
+          "New construction with acrylic stucco, waterproof vinyl plank flooring, quartz countertops, and an owned 3kW solar system.",
+        photos: [
+          "/portfolio/sheridan-st/1.jpg",
+          "/portfolio/sheridan-st/2.jpg",
+          "/portfolio/sheridan-st/3.jpg",
+          "/portfolio/sheridan-st/4.jpg",
+          "/portfolio/sheridan-st/5.jpg",
+        ],
+      },
+      {
+        id: "mendiburu-rd",
+        address: "9664 Mendiburu Rd",
+        cityStateZip: "California City, CA 93505",
+        soldPrice: "$359,000",
+        specs: "4 bd · 2 ba · 2,246 sqft",
+        description:
+          "Full remodel on city sewer with a 3-car garage, new luxury vinyl plank flooring, and a completely updated kitchen.",
+        photos: ["/portfolio/mendiburu-rd/1.jpg"],
+      },
+      {
+        id: "alsab-pl",
+        address: "17400 Alsab Pl",
+        cityStateZip: "Stallion Springs, CA 93561",
+        soldPrice: "$390,000",
+        specs: "3 bd · 2 ba · 1,507 sqft",
+        description:
+          "Freshly built mountain home in Stallion Springs with RV parking, an insulated garage, and built-in fire suppression.",
+        photos: ["/portfolio/alsab-pl/1.jpg"],
+      },
+      {
+        id: "crestline-dr",
+        address: "2574 Crestline Dr",
+        cityStateZip: "Lemon Grove, CA 91945",
+        soldPrice: "$720,000",
+        specs: "3 bd · 2 ba · 1,310 sqft",
+        description:
+          "Mid-century Lemon Grove home with original hardwood floors, a brick fireplace, and a bonus sunroom.",
+        photos: [
+          "/portfolio/crestline-dr/1.webp",
+          "/portfolio/crestline-dr/2.webp",
+          "/portfolio/crestline-dr/3.webp",
+          "/portfolio/crestline-dr/4.webp",
+          "/portfolio/crestline-dr/5.webp",
+        ],
+      },
+      {
+        id: "woodshawn-dr",
+        address: "7318 Woodshawn Dr",
+        cityStateZip: "San Diego, CA 92114",
+        soldPrice: "$785,000",
+        specs: "3 bd · 2 ba · 1,320 sqft",
+        description:
+          "Fully remodeled Encanto home with an open kitchen-to-living layout and a 360-square-foot covered back patio.",
+        photos: [
+          "/portfolio/woodshawn-dr/1.webp",
+          "/portfolio/woodshawn-dr/2.webp",
+          "/portfolio/woodshawn-dr/3.webp",
+          "/portfolio/woodshawn-dr/4.webp",
+          "/portfolio/woodshawn-dr/5.webp",
+        ],
+      },
+      {
+        id: "pellisier-rd",
+        address: "18024 Pellisier Rd",
+        cityStateZip: "Tehachapi, CA 93561",
+        soldPrice: "$980,000",
+        specs: "4 bd · 3 ba · 2,805 sqft · 20 acres",
+        description:
+          "20-acre Cummings Valley ranch with a 40x60 barn, a private well, and vaulted cedar ceilings across an open-concept main house.",
+        photos: [
+          "/portfolio/pellisier-rd/1.webp",
+          "/portfolio/pellisier-rd/2.webp",
+          "/portfolio/pellisier-rd/3.webp",
+          "/portfolio/pellisier-rd/4.webp",
+          "/portfolio/pellisier-rd/5.webp",
+        ],
+      },
+    ],
   },
 
   faq: [

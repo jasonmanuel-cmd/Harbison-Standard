@@ -32,6 +32,18 @@ export interface ProofStat {
   label: string;
 }
 
+export interface SoldProperty {
+  /** Stable id, used as the React key and image directory name. */
+  id: string;
+  address: string;
+  cityStateZip: string;
+  soldPrice: string;
+  specs: string;
+  description: string;
+  /** Paths under /portfolio/<id>/, 1-5 images, first is the card's hero shot. */
+  photos: [string, ...string[]];
+}
+
 export interface TenantContact {
   displayName: string;
   roleLine: string;
@@ -54,6 +66,17 @@ export interface TenantCopy {
   heroSecondaryCta: string;
   proofStats: ProofStat[];
   services: ServiceCard[];
+  /** About/bio section, rendered high on the home page. */
+  aboutHeading: string;
+  aboutBody: string;
+  /** Path under /brand/. Optional in spirit — leave "" to hide the photo. */
+  aboutPhotoPath: string;
+  /** Lead-form section heading/subcopy, used to frame it as a signup, not just a form. */
+  signupHeading: string;
+  signupSubcopy: string;
+  portfolioHeading: string;
+  portfolioIntro: string;
+  soldProperties: SoldProperty[];
 }
 
 export interface TenantConfig {

@@ -3,6 +3,8 @@ import { getTenant } from "@/tenants";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { LeadForm } from "@/components/LeadForm";
+import { AboutSection } from "@/components/AboutSection";
+import { PortfolioSection } from "@/components/PortfolioSection";
 import { BenchmarkMark } from "@/components/BenchmarkMark";
 import { JsonLdScript } from "@/components/JsonLdScript";
 import { buildGraph } from "@/lib/jsonld";
@@ -76,6 +78,14 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      <AboutSection tenant={tenant} />
+
+      <LeadForm
+        source="home"
+        heading={tenant.copy.signupHeading}
+        subcopy={tenant.copy.signupSubcopy}
+      />
 
       <section className="bg-navy-deep py-20">
         <div className="mx-auto max-w-5xl px-6">
@@ -169,7 +179,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-parchment py-20">
+      <PortfolioSection tenant={tenant} />
+
+      <section className="bg-paper py-20">
         <div className="mx-auto max-w-3xl px-6">
           <h2 className="font-serif text-3xl text-navy">Frequently asked</h2>
           <div className="mt-8 space-y-4">
@@ -190,8 +202,6 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
-
-      <LeadForm source="home" />
 
       <Footer tenant={tenant} />
     </>
