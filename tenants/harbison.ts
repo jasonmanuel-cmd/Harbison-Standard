@@ -25,7 +25,7 @@ export const harbison: TenantConfig = {
   },
 
   contact: {
-    displayName: "Nathaniel Harvison",
+    displayName: "Nathaniel Harbison",
     roleLine: "Realtor · Developer · Investor — All Around Kern County, CA",
     phone: "(661) 472-7499",
     phoneHref: "tel:+16614727499",

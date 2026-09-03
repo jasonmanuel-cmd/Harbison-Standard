@@ -8,7 +8,7 @@ import { buildMetadata } from "@/lib/metadata";
 export const dynamic = "force-static";
 
 const SHORT_BIO =
-  "Nathaniel Harvison is a Realtor, developer, and investor based in Kern County, California. He buys property directly for cash, builds and pre-sells spec homes, and evaluates land and investment opportunities. Licensed by the California DRE, he has worked in Kern County real estate for more than a decade, personally handling every stage of a transaction.";
+  "Nathaniel Harbison is a Realtor, developer, and investor based in Kern County, California. He buys property directly for cash, builds and pre-sells spec homes, and evaluates land and investment opportunities. Licensed by the California DRE, he has worked in Kern County real estate for more than a decade, personally handling every stage of a transaction.";
 
 export const metadata = buildMetadata({
   title: "Press Kit & Media",
@@ -17,7 +17,7 @@ export const metadata = buildMetadata({
 });
 
 const LONG_BIO =
-  "Nathaniel Harvison works all around Kern County — Bakersfield, Tehachapi, and the surrounding area — as a licensed Realtor, a developer, and an investor, usually on the same property in the same week. He buys houses directly for cash in situations like probate, inherited property, pre-foreclosure, and tenant-occupied rentals; builds and pre-sells spec homes from lot selection through closing; and evaluates land and investment property for buyers deciding what a parcel is actually worth. His approach: one person, start to finish, rather than handing a transaction between multiple specialists. He holds California DRE license #02059393 and is not affiliated with a brokerage team.";
+  "Nathaniel Harbison works all around Kern County — Bakersfield, Tehachapi, and the surrounding area — as a licensed Realtor, a developer, and an investor, usually on the same property in the same week. He buys houses directly for cash in situations like probate, inherited property, pre-foreclosure, and tenant-occupied rentals; builds and pre-sells spec homes from lot selection through closing; and evaluates land and investment property for buyers deciding what a parcel is actually worth. His approach: one person, start to finish, rather than handing a transaction between multiple specialists. He holds California DRE license #02059393 and is not affiliated with a brokerage team.";
 
 const PILLARS = [
   {

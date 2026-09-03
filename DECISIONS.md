@@ -58,14 +58,18 @@ no business decision or invented data required):
   action plan proposes. All of these need operator-supplied IDs, real
   copy, or a real business decision (what the privacy policy actually
   says) — not something to generate wholesale from a template.
-- Two open questions surfaced by the audit that are the operator's call,
-  not mine: (1) `contact.displayName` reads "Nathaniel Harvison" while the
-  brand is "The Harbison Standard" — genuine inconsistency, but picking
-  a spelling means guessing which is the real name; (2) `roleLine`/
-  `complianceFooter` say "All Around Kern County, CA" while the sold-
-  property portfolio (added this session) includes Lemon Grove and San
-  Diego addresses — real tension between existing brand copy and newly
-  surfaced portfolio data, not resolved here.
+- Two open questions surfaced by the audit went back to the operator
+  rather than being guessed at. Resolved: the name is "Harbison," not
+  "Harvison" — `contact.displayName` and every other reference (press
+  page bios, README, PHASES.md) updated to match. Also resolved: the
+  live `ns4homes.site` alias is not the permanent domain — a different
+  one is coming, so `NEXT_PUBLIC_SITE_URL` stays unset on Vercel for now
+  and canonical URLs keep resolving to the placeholder until the real
+  domain is set. Still unresolved: `roleLine`/`complianceFooter` say
+  "All Around Kern County, CA" while the sold-property portfolio (added
+  this session) includes Lemon Grove and San Diego addresses — real
+  tension between existing brand copy and newly surfaced portfolio
+  data, not the operator's call yet either.
 
 ## Post-Phase-3 (home page: about, signup framing, sold-property portfolio)
 

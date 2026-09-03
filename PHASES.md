@@ -15,7 +15,7 @@ commit, per the spec's stop-and-review gate.
 - `tenants/types.ts` — the `TenantConfig` contract every tenant must
   satisfy (brand, contact, license, social/`sameAs`, nav, hero/service
   copy, FAQ, tunable scoring weights).
-- `tenants/harbison.ts` — tenant #1, fully populated: Nathaniel Harvison's
+- `tenants/harbison.ts` — tenant #1, fully populated: Nathaniel Harbison's
   contact/license info, approved hero copy, the four drafted FAQ entries
   (with `[mark: verify with counsel]` flags preserved on the probate and
   SB 800 answers), proof-stat placeholders, and initial scoring weights

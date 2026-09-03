@@ -1,6 +1,6 @@
 # The Harbison Standard
 
-Production website + lead-capture + CRM for Nathaniel Harvison (Realtor ·
+Production website + lead-capture + CRM for Nathaniel Harbison (Realtor ·
 Developer · Investor, Kern County, CA). Client-owned code, no page
 builders, no rented land. Built as a white-labelable base — see
 `OPERATOR.md` (added Phase 4) for spinning up a second agent's site from
