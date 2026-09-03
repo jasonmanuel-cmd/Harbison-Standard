@@ -3,6 +3,25 @@
 Judgment calls made where the spec was silent or ambiguous, newest first.
 Each entry: what was decided, why, and what would change it.
 
+## Post-Phase-3 (production deploy fix)
+
+### `getTenant()` treated an empty-string env var as a real tenant slug
+First real Vercel deploy (`coaiebay-sources-projects/harbison-standard2`)
+failed the build with `Error: Unknown tenant slug: ""`, traced to
+`tenants/index.ts:15`. Cause: `getTenant()` used
+`slug ?? process.env.NEXT_PUBLIC_TENANT ?? harbison.slug` — `??` only
+falls through on `null`/`undefined`, not `""`. Locally the var is simply
+absent from the environment, so it always fell through correctly; on
+Vercel, the project's env var UI had `NEXT_PUBLIC_TENANT` set with an
+empty value rather than omitted entirely, and Next.js inlines that empty
+string at build time, so the check saw a defined-but-empty value and
+never reached the `harbison.slug` fallback. Reproduced locally with
+`NEXT_PUBLIC_TENANT="" npm run build` before fixing, and confirmed the
+fix resolves it the same way. Fixed by switching to `||`, which treats
+`""` the same as unset — the correct behavior regardless of what any
+given host's dashboard does with a blank-but-present env var. No schema,
+RLS, or other logic changes.
+
 ## Post-Phase-3 (operator request)
 
 ### Twilio pulled out entirely — missed-call flow now a mock-data example
