@@ -210,7 +210,8 @@ export const harbison: TenantConfig = {
       id: "probate-sale-in-ca",
       question: "Can I sell a property that's in probate in California?",
       answer:
-        "Yes. California probate law allows a personal representative with full authority under the Independent Administration of Estates Act to sell real property without court confirmation in most cases. Court confirmation is still required in some situations. An estate attorney should confirm the specific authority granted in your case. [mark: verify with counsel]",
+        "Yes. California probate law allows a personal representative with full authority under the Independent Administration of Estates Act to sell real property without court confirmation in most cases. Court confirmation is still required in some situations. An estate attorney should confirm the specific authority granted in your case.",
+      verifyWithCounsel: true,
     },
     {
       id: "investor-vs-listing-costs",
@@ -222,7 +223,8 @@ export const harbison: TenantConfig = {
       id: "ca-new-build-sb800-warranty",
       question: "What warranty applies to a new spec home built in California?",
       answer:
-        "New homes built in California are generally covered under SB 800, the state's Right to Repair statute, which sets structural, plumbing, electrical, and other component standards and a pre-litigation repair process for construction defect claims. Warranty periods vary by component. A licensed contractor or attorney should confirm coverage details for a specific build. [mark: verify with counsel]",
+        "New homes built in California are generally covered under SB 800, the state's Right to Repair statute, which sets structural, plumbing, electrical, and other component standards and a pre-litigation repair process for construction defect claims. Warranty periods vary by component. A licensed contractor or attorney should confirm coverage details for a specific build.",
+      verifyWithCounsel: true,
     },
   ],
 

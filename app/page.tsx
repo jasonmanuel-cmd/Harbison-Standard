@@ -90,14 +90,18 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-navy-deep py-14">
-        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-x-6 gap-y-10 divide-brass/20 px-6 text-center md:grid-cols-4 md:divide-x">
+      {/* Deliberately light, not navy: the header + hero above this are
+          already a full dark band. Stacking a third dark section here
+          reads as an undifferentiated wall of navy (confirmed by
+          screenshot during dev) rather than a designed rhythm. */}
+      <section className="border-y border-navy/10 bg-paper py-14">
+        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-x-6 gap-y-10 divide-navy/10 px-6 text-center md:grid-cols-4 md:divide-x">
           {tenant.copy.proofStats.map((stat) => (
             <div key={stat.label} className="px-2">
-              <p className="font-serif text-4xl text-brass md:text-5xl">
+              <p className="font-serif text-4xl text-navy md:text-5xl">
                 {stat.value}
               </p>
-              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-steel">
+              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-navy/60">
                 {stat.label}
               </p>
             </div>

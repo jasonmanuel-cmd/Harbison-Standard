@@ -3,8 +3,15 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { JsonLdScript } from "@/components/JsonLdScript";
 import { buildGraph } from "@/lib/jsonld";
+import { buildMetadata } from "@/lib/metadata";
 
 export const dynamic = "force-static";
+
+export const metadata = buildMetadata({
+  title: "Terms of Use",
+  description: "Terms governing use of The Harbison Standard website.",
+  path: "/terms",
+});
 
 export default function TermsPage() {
   const tenant = getTenant();

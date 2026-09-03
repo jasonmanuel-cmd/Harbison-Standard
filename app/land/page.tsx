@@ -4,8 +4,16 @@ import { Footer } from "@/components/Footer";
 import { LeadForm } from "@/components/LeadForm";
 import { JsonLdScript } from "@/components/JsonLdScript";
 import { buildGraph } from "@/lib/jsonld";
+import { buildMetadata } from "@/lib/metadata";
 
 export const dynamic = "force-static";
+
+export const metadata = buildMetadata({
+  title: "Land & Lot Valuation in Kern County",
+  description:
+    "Own a lot or parcel? Get a straight read on what it's worth and what it would take to build on it.",
+  path: "/land",
+});
 
 const FACTORS = [
   {

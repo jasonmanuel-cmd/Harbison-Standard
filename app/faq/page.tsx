@@ -4,8 +4,16 @@ import { Footer } from "@/components/Footer";
 import { LeadForm } from "@/components/LeadForm";
 import { JsonLdScript } from "@/components/JsonLdScript";
 import { buildGraph } from "@/lib/jsonld";
+import { buildMetadata } from "@/lib/metadata";
 
 export const dynamic = "force-static";
+
+export const metadata = buildMetadata({
+  title: "Frequently Asked Questions",
+  description:
+    "Answers on cash sales, probate, notice-of-default, and new-construction warranties for Kern County property owners.",
+  path: "/faq",
+});
 
 export default function FaqPage() {
   const tenant = getTenant();

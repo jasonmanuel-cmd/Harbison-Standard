@@ -4,8 +4,16 @@ import { Footer } from "@/components/Footer";
 import { LeadForm } from "@/components/LeadForm";
 import { JsonLdScript } from "@/components/JsonLdScript";
 import { buildGraph } from "@/lib/jsonld";
+import { buildMetadata } from "@/lib/metadata";
 
 export const dynamic = "force-static";
+
+export const metadata = buildMetadata({
+  title: "Spec Homes Built in Kern County",
+  description:
+    "Spec homes built and pre-sold in Kern County. See what's under construction and what's available before it's listed.",
+  path: "/build",
+});
 
 const STAGES = [
   {

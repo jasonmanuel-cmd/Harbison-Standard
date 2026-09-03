@@ -3,6 +3,70 @@
 Judgment calls made where the spec was silent or ambiguous, newest first.
 Each entry: what was decided, why, and what would change it.
 
+## Post-Phase-3 (operator-supplied competitive audit: what got fixed, what didn't)
+
+An operator-supplied third-party site audit (comparing this site to
+tollbrothers.com) flagged real, verifiable issues alongside strategic
+suggestions and some fabricated specifics. Handled as two different
+categories, not one blanket "implement the report":
+
+**Verified against the actual code and fixed** (all real, all zero-risk —
+no business decision or invented data required):
+- `[mark: verify with counsel]` was shipping in two public FAQ answers
+  (and therefore in the FAQPage JSON-LD Google reads) — an internal
+  scaffolding note that was never meant to ship. The `verifyWithCounsel`
+  flag already existed on `FaqEntry` for exactly this case (renders "confirm
+  specifics with an attorney" via `app/faq/page.tsx`) but wasn't set on
+  either entry — set it, removed the bracket text from the answer strings.
+- Every public page shared the homepage's `<title>`/description (root
+  `layout.tsx` was the only file with a `metadata` export besides
+  `/v/[slug]`) — added `lib/metadata.ts` (`buildMetadata()`) and a real,
+  content-grounded title/description/canonical/OG/Twitter block per page.
+  Canonical URLs read `tenant.siteUrl`, so they're correct the moment
+  `NEXT_PUBLIC_SITE_URL` is set to a real domain — no hardcoding.
+- No favicon and no OG/Twitter image existed anywhere. Added
+  `app/icon.tsx` (generated PNG from the same benchmark-mark SVG already
+  used as the brand watermark — its own comment already said "used as
+  favicon source") and `app/opengraph-image.tsx` (site-wide default,
+  same navy/brass frame as the existing `/v/[slug]` one). Both via
+  `next/og`'s `ImageResponse`, no new dependency.
+- No security headers. Added the four that are genuinely zero-config-risk
+  (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`,
+  `Permissions-Policy`) via `next.config.js`. Deliberately did **not** add
+  a Content-Security-Policy — LeadForm ships an inline script
+  (`dangerouslySetInnerHTML`) and `next/image`/`next/og` both need real
+  allowlisting; a CSP bolted on without testing it against every page risks
+  silently breaking the site, which is worse than not having one yet.
+
+**Flagged, not fixed — needs the operator, not fabrication:**
+- The report's own copy-paste `RealEstateAgent` JSON-LD snippet included
+  `aggregateRating: { ratingValue: "5.0", reviewCount: "12" }` and
+  `sameAs` links to placeholder URLs (literal `"…"`). Did not add either —
+  fabricated review counts in structured data is exactly the kind of thing
+  Google's structured-data guidelines penalize, and placeholder `sameAs`
+  URLs would 404. `sameAs` stays empty until real profile URLs exist (see
+  the existing comment on `tenant.social.sameAs`); no rating schema until
+  real reviews exist.
+- Did not swap the domain/email in metadata to `harbisonstandard.com` /
+  `nate@harbisonstandard.com` from the report's example snippets — that
+  domain isn't owned (the report's own action plan lists buying it as a
+  to-do). The live alias is `ns4homes.site`; canonical URLs will use
+  whatever real domain the operator sets `NEXT_PUBLIC_SITE_URL` to.
+- Did not touch GA4/Clarity, a cookie/CCPA consent banner, Google Business
+  Profile, reviews collection, or the 20+ new pages (city×service pages,
+  per-property pages, market-report content, case-study PDFs) the report's
+  action plan proposes. All of these need operator-supplied IDs, real
+  copy, or a real business decision (what the privacy policy actually
+  says) — not something to generate wholesale from a template.
+- Two open questions surfaced by the audit that are the operator's call,
+  not mine: (1) `contact.displayName` reads "Nathaniel Harvison" while the
+  brand is "The Harbison Standard" — genuine inconsistency, but picking
+  a spelling means guessing which is the real name; (2) `roleLine`/
+  `complianceFooter` say "All Around Kern County, CA" while the sold-
+  property portfolio (added this session) includes Lemon Grove and San
+  Diego addresses — real tension between existing brand copy and newly
+  surfaced portfolio data, not resolved here.
+
 ## Post-Phase-3 (home page: about, signup framing, sold-property portfolio)
 
 ### "Mailing list" reused the existing lead-capture form, not a second system

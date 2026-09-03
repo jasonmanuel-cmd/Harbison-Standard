@@ -4,8 +4,16 @@ import { Footer } from "@/components/Footer";
 import { LeadForm } from "@/components/LeadForm";
 import { JsonLdScript } from "@/components/JsonLdScript";
 import { buildGraph } from "@/lib/jsonld";
+import { buildMetadata } from "@/lib/metadata";
 
 export const dynamic = "force-static";
+
+export const metadata = buildMetadata({
+  title: "Sell for Cash — Probate, Inherited & Distressed Property",
+  description:
+    "Probate, inherited, notice-of-default, or a tired-landlord situation. A direct cash number on your Kern County property, no listing required.",
+  path: "/sell",
+});
 
 const TRACKS = [
   {

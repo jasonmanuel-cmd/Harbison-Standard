@@ -3,8 +3,15 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { JsonLdScript } from "@/components/JsonLdScript";
 import { buildGraph } from "@/lib/jsonld";
+import { buildMetadata } from "@/lib/metadata";
 
 export const dynamic = "force-static";
+
+export const metadata = buildMetadata({
+  title: "Privacy Policy",
+  description: "How The Harbison Standard collects, uses, and protects your information.",
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   const tenant = getTenant();
