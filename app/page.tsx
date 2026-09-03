@@ -24,6 +24,18 @@ export default function HomePage() {
       <Header tenant={tenant} />
 
       <section className="relative overflow-hidden bg-navy">
+        <video
+          className="absolute inset-0 h-full w-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+        >
+          <source src="/media/hero.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-navy/70" aria-hidden="true" />
         <BenchmarkMark className="pointer-events-none absolute -right-16 top-1/2 h-96 w-96 -translate-y-1/2 text-brass opacity-10" />
         <div className="relative mx-auto max-w-3xl px-6 py-24">
           <p className="font-serif italic text-brass">{tenant.copy.heroTag}</p>
