@@ -25,9 +25,15 @@ export default function HomePage() {
       />
       <Header tenant={tenant} />
 
-      <section className="relative overflow-hidden bg-navy">
+      <section className="relative flex min-h-[92vh] items-center overflow-hidden bg-navy">
+        {/* object-cover (not contain) is deliberate: this is a full-bleed
+            hero banner, not a boxed picture — the section has a real
+            min-height so the crop stays reasonable at every viewport
+            instead of the aggressive zoom a short/narrow container would
+            force. animate-kenburns is a slow, one-shot CSS scale — pure
+            CSS, no JS, so a no-JS browser just sees the plain video. */}
         <video
-          className="absolute inset-0 h-full w-full object-contain"
+          className="absolute inset-0 h-full w-full origin-center animate-kenburns object-cover object-center"
           autoPlay
           muted
           loop
@@ -37,11 +43,22 @@ export default function HomePage() {
         >
           <source src="/media/hero.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-navy/70" aria-hidden="true" />
+        <div
+          className="absolute inset-0 bg-gradient-to-t from-navy-deep via-navy/70 to-navy/30"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute inset-0 bg-gradient-to-r from-navy-deep/80 via-transparent to-transparent"
+          aria-hidden="true"
+        />
         <BenchmarkMark className="pointer-events-none absolute -right-16 top-1/2 h-96 w-96 -translate-y-1/2 text-brass opacity-10" />
-        <div className="relative mx-auto max-w-3xl px-6 py-24">
-          <p className="font-serif italic text-brass">{tenant.copy.heroTag}</p>
-          <h1 className="mt-4 font-serif text-4xl leading-tight text-white md:text-5xl">
+
+        <div className="relative mx-auto w-full max-w-3xl px-6 py-24">
+          <p className="animate-fade-up inline-flex items-center gap-2 border border-brass/40 bg-navy-deep/60 px-4 py-2 font-serif text-xs font-semibold uppercase tracking-[0.3em] text-brass backdrop-blur-sm">
+            <span aria-hidden="true">◆</span>
+            {tenant.contact.roleLine}
+          </p>
+          <h1 className="animate-fade-up mt-6 font-serif text-5xl leading-[1.05] text-white [animation-delay:150ms] [text-shadow:0_2px_24px_rgba(0,0,0,0.45)] md:text-7xl">
             {tenant.copy.heroHeadline.replace(
               tenant.copy.heroHeadlineHighlight,
               "",
@@ -50,30 +67,39 @@ export default function HomePage() {
               {tenant.copy.heroHeadlineHighlight}
             </span>
           </h1>
-          <p className="mt-6 text-lg text-steel">{tenant.copy.heroSubcopy}</p>
-          <div className="mt-8 flex flex-wrap gap-4">
+          <p className="animate-fade-up mt-6 max-w-xl text-lg text-steel [animation-delay:300ms]">
+            {tenant.copy.heroSubcopy}
+          </p>
+          <div className="animate-fade-up mt-10 flex flex-wrap gap-4 [animation-delay:450ms]">
             <a
               href="#lead-form"
-              className="bg-brass px-6 py-3 text-sm font-semibold uppercase tracking-wide text-navy-deep"
+              className="bg-brass px-8 py-4 text-sm font-semibold uppercase tracking-wide text-navy-deep shadow-[0_8px_30px_rgba(201,162,75,0.35)] transition-transform hover:scale-105"
             >
               {tenant.copy.heroPrimaryCta}
             </a>
             <Link
               href="/build"
-              className="border border-steel px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white"
+              className="border border-white/40 bg-white/5 px-8 py-4 text-sm font-semibold uppercase tracking-wide text-white backdrop-blur-sm transition-colors hover:border-white hover:bg-white/15"
             >
               {tenant.copy.heroSecondaryCta}
             </Link>
           </div>
+          <p className="animate-fade-up mt-12 text-xs uppercase tracking-[0.3em] text-steel/70 [animation-delay:600ms]">
+            {tenant.contact.licenseLine} · Equal Housing Opportunity
+          </p>
         </div>
       </section>
 
-      <section className="border-y border-navy/10 bg-paper py-10">
-        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-6 px-6 text-center md:grid-cols-4">
+      <section className="bg-navy-deep py-14">
+        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-x-6 gap-y-10 divide-brass/20 px-6 text-center md:grid-cols-4 md:divide-x">
           {tenant.copy.proofStats.map((stat) => (
-            <div key={stat.label}>
-              <p className="font-serif text-3xl text-navy">{stat.value}</p>
-              <p className="mt-1 text-sm text-navy/70">{stat.label}</p>
+            <div key={stat.label} className="px-2">
+              <p className="font-serif text-4xl text-brass md:text-5xl">
+                {stat.value}
+              </p>
+              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-steel">
+                {stat.label}
+              </p>
             </div>
           ))}
         </div>
@@ -87,9 +113,13 @@ export default function HomePage() {
         subcopy={tenant.copy.signupSubcopy}
       />
 
-      <section className="bg-navy-deep py-20">
-        <div className="mx-auto max-w-5xl px-6">
-          <h2 className="text-center font-serif text-3xl text-white">
+      <section className="relative overflow-hidden bg-navy-deep py-20">
+        <BenchmarkMark className="pointer-events-none absolute -left-24 -top-24 h-96 w-96 text-brass opacity-[0.04]" />
+        <div className="relative mx-auto max-w-5xl px-6">
+          <p className="text-center font-serif text-xs font-semibold uppercase tracking-[0.3em] text-brass">
+            One point of contact, every stage
+          </p>
+          <h2 className="mt-3 text-center font-serif text-3xl text-white md:text-4xl">
             Three ways to work together
           </h2>
 
@@ -154,7 +184,7 @@ export default function HomePage() {
                       : "hidden peer-checked/tab2:block"
                 }
               >
-                <div className="grid gap-6 border border-white/10 bg-white/[0.03] p-8 md:grid-cols-[auto,1fr] md:items-center md:gap-10 md:p-12">
+                <div className="grid gap-6 border border-white/10 bg-white/[0.03] p-8 transition-colors duration-300 hover:border-brass/40 hover:bg-white/[0.06] md:grid-cols-[auto,1fr] md:items-center md:gap-10 md:p-12">
                   <p className="font-serif text-xs font-semibold uppercase tracking-[0.3em] text-brass">
                     {service.pillar}
                   </p>
@@ -167,9 +197,12 @@ export default function HomePage() {
                     </p>
                     <Link
                       href={service.href}
-                      className="mt-6 inline-block border-b border-brass text-sm font-semibold uppercase tracking-wide text-brass hover:text-white"
+                      className="group mt-6 inline-flex items-center gap-2 border-b border-brass text-sm font-semibold uppercase tracking-wide text-brass hover:text-white"
                     >
-                      Learn more →
+                      Learn more
+                      <span className="transition-transform group-hover:translate-x-1">
+                        →
+                      </span>
                     </Link>
                   </div>
                 </div>

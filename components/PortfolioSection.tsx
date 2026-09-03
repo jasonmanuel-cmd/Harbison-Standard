@@ -11,7 +11,10 @@ export function PortfolioSection({ tenant }: { tenant: TenantConfig }) {
   return (
     <section className="bg-parchment py-20">
       <div className="mx-auto max-w-6xl px-6">
-        <h2 className="text-center font-serif text-3xl text-navy">
+        <p className="text-center font-serif text-xs font-semibold uppercase tracking-[0.3em] text-brass">
+          Proof, not promises
+        </p>
+        <h2 className="mt-3 text-center font-serif text-3xl text-navy md:text-4xl">
           {tenant.copy.portfolioHeading}
         </h2>
         <p className="mx-auto mt-3 max-w-2xl text-center text-navy/70">
@@ -22,7 +25,7 @@ export function PortfolioSection({ tenant }: { tenant: TenantConfig }) {
           {tenant.copy.soldProperties.map((property) => (
             <article
               key={property.id}
-              className="border border-navy/10 bg-white"
+              className="group border border-navy/10 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-navy/10"
             >
               <div className="relative aspect-[4/3] w-full overflow-hidden bg-navy/5">
                 <Image
@@ -30,9 +33,10 @@ export function PortfolioSection({ tenant }: { tenant: TenantConfig }) {
                   alt={`${property.address}, ${property.cityStateZip}`}
                   fill
                   sizes="(min-width: 768px) 50vw, 100vw"
-                  className="object-cover"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-                <p className="absolute bottom-0 right-0 bg-navy/90 px-3 py-1 text-sm font-semibold text-white">
+                <div className="absolute inset-0 bg-gradient-to-t from-navy-deep/60 via-transparent to-transparent" />
+                <p className="absolute bottom-3 right-3 bg-brass px-3 py-1 text-sm font-semibold uppercase tracking-wide text-navy-deep shadow-lg">
                   Sold {property.soldPrice}
                 </p>
               </div>
