@@ -22,6 +22,15 @@ fix resolves it the same way. Fixed by switching to `||`, which treats
 given host's dashboard does with a blank-but-present env var. No schema,
 RLS, or other logic changes.
 
+The redeploy this fix triggered hit the identical pattern one field over:
+`tenants/harbison.ts`'s `siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "..."`
+failed `new URL(tenant.siteUrl)` in `app/layout.tsx` with `Invalid URL`
+for the same reason — `NEXT_PUBLIC_SITE_URL` was also present-but-empty
+on Vercel. Fixed identically (`||` instead of `??`). Grepped the repo for
+every other `process.env.\w+ ??` occurrence before pushing again — this
+was the only other one, so this class of bug should be closed now, not
+just patched at the two sites that happened to surface first.
+
 ## Post-Phase-3 (operator request)
 
 ### Twilio pulled out entirely — missed-call flow now a mock-data example

@@ -12,7 +12,7 @@ export const harbison: TenantConfig = {
     // No domain purchased yet. Populated once the client buys one; until
     // then middleware falls back to NEXT_PUBLIC_TENANT. See DECISIONS.md.
   ],
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "https://example-harbison-standard.placeholder",
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://example-harbison-standard.placeholder",
 
   brand: {
     logoPath: "/brand/logo.png",
