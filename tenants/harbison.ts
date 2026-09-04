@@ -45,6 +45,7 @@ export const harbison: TenantConfig = {
     { label: "Sell", href: "/sell" },
     { label: "Build", href: "/build" },
     { label: "Land", href: "/land" },
+    { label: "Communities", href: "/communities" },
     { label: "Press", href: "/press" },
     { label: "FAQ", href: "/faq" },
   ],
@@ -225,6 +226,85 @@ export const harbison: TenantConfig = {
       answer:
         "New homes built in California are generally covered under SB 800, the state's Right to Repair statute, which sets structural, plumbing, electrical, and other component standards and a pre-litigation repair process for construction defect claims. Warranty periods vary by component. A licensed contractor or attorney should confirm coverage details for a specific build.",
       verifyWithCounsel: true,
+    },
+    {
+      id: "what-is-nod",
+      question: "What is a Notice of Default and how does it work?",
+      answer:
+        "A Notice of Default (NOD) is a legal notice that a borrower has fallen behind on mortgage payments. It's the first step in the foreclosure process, typically issued after 3-4 months of missed payments. Once issued, the owner usually has 4-5 months to cure the default before the lender can foreclose. A cash offer can resolve the situation quickly and preserve equity.",
+    },
+    {
+      id: "inherited-property-costs",
+      question: "What does it cost to sell an inherited property?",
+      answer:
+        "Costs vary by sale type. A traditional listing costs 5-6% in commissions plus 1-2% in closing costs. A cash offer typically has no commission and lower closing costs (0.5-1%), with savings offset by a lower offer price. Estate taxes and probate costs depend on California law and the property value. Consulting an accountant and estate attorney is essential.",
+    },
+    {
+      id: "how-long-spec-home",
+      question: "How long does it take to build a spec home?",
+      answer:
+        "Timeline varies by complexity. A single-story residential build typically takes 8-12 months from foundation to turnkey. Multi-story or complex designs can take 12-18 months. Delays happen due to weather, permit delays, material shortages, and inspection schedules. A well-managed project with experienced subcontractors minimizes delays.",
+    },
+    {
+      id: "how-much-lot-cost",
+      question: "How much does a raw lot cost in Kern County?",
+      answer:
+        "Lot prices vary dramatically by location and zoning. In California City, expect $40k-$100k per lot. In Bakersfield's premium areas, $200k-$400k+. In Tehachapi, $150k-$500k depending on views and acreage. Prices reflect location, utilities available, zoning (residential vs commercial), and market demand. A site analysis is free—reach out to discuss your specific location.",
+    },
+    {
+      id: "why-buy-cash",
+      question: "Why would someone choose a cash offer over a traditional listing?",
+      answer:
+        "Speed (weeks vs months), certainty (no financing contingencies), simplicity (no showings, repairs, or buyer drama), and urgency situations (estate sales, foreclosure, relocation, tenant problems). The trade-off: a cash offer is typically 15-25% below retail value because it reflects the buyer's risk and cost of capital.",
+    },
+    {
+      id: "tenant-issues-sale",
+      question: "Can I sell a property with problem tenants still living in it?",
+      answer:
+        "Yes, but it complicates the sale. Tenant-occupied properties (especially with lease agreements) typically sell for less because buyers assume eviction costs and delays. A cash buyer with experience managing tenant transitions can close quickly while you avoid months of legal proceedings.",
+    },
+    {
+      id: "land-valuation",
+      question: "How do you value raw land?",
+      answer:
+        "Raw land valuation depends on: location and zoning, utilities and access, topography and buildability, local market comparables, and intended use (residential, commercial, agricultural). Highest and best use analysis determines which use generates the most value. A site analysis includes comps, zoning research, and development potential.",
+    },
+    {
+      id: "build-timeline-before-sell",
+      question: "Should I finish improvements before selling or sell as-is?",
+      answer:
+        "It depends on ROI. Some repairs (roof, foundation, major systems) add value and buyer confidence. Cosmetic fixes often don't justify their cost. A cash buyer typically purchases as-is, accepting the property's condition. A traditional buyer expects a turnkey or near-turnkey home. Discuss your situation for a clear recommendation.",
+    },
+    {
+      id: "multiple-units-investment",
+      question: "Are multi-unit properties better for cash flow than single-family?",
+      answer:
+        "Multi-unit (duplex, triplex, fourplex) properties can generate higher total rent but have higher operating costs and vacancy risk. Single-family homes are easier to manage and sell. The best choice depends on your market knowledge, management capacity, and target return. Local market analysis determines which strategy works best for your area.",
+    },
+    {
+      id: "investment-analysis-free",
+      question: "Do you offer free property or land analysis?",
+      answer:
+        "Yes. A property analysis is free—no obligation. I'll review market comps, estimate fair market value for a traditional sale, calculate cash flow if it's a rental, and assess development potential if it's land. This helps you understand what your property is actually worth and what financial scenario makes sense for your situation.",
+    },
+    {
+      id: "tax-consequences-sale",
+      question: "What are the tax consequences of selling a property?",
+      answer:
+        "Federal capital gains tax applies to the profit on a sale (long-term vs short-term rates differ). California has no state capital gains tax on real estate. If you've lived in the home 2 of the last 5 years, up to $250k (single) or $500k (married) of gain is excluded. Consult a CPA or tax attorney to understand your specific situation.",
+      verifyWithCounsel: true,
+    },
+    {
+      id: "what-reo-property",
+      question: "What is an REO (bank-owned) property?",
+      answer:
+        "REO (Real Estate Owned) means the lender foreclosed and now owns the property. These properties are listed by the bank at market value or below, but come with inspection periods and often sales contingencies. They can be good deals but require normal financing and inspections—faster than auctions but slower than cash offers.",
+    },
+    {
+      id: "buy-below-market",
+      question: "How do you find below-market deals?",
+      answer:
+        "Below-market deals come from distressed situations (foreclosure, NOD, probate), off-market sellers (direct mail, networking, bird dogs), expired listings (delisted homes with motivated sellers), and whole-sale networks. Most never hit MLS. Building relationships with probate attorneys, estate agents, and local wholesalers reveals off-market opportunities.",
     },
   ],
 
