@@ -3,6 +3,38 @@
 Judgment calls made where the spec was silent or ambiguous, newest first.
 Each entry: what was decided, why, and what would change it.
 
+## Phase 4 (white-label operator scaffolding)
+
+### `scripts/make-tenant.mjs` generates a new config, not a full clone of the repo
+
+Phase 4 added an interactive script to scaffold new operators — but only the
+tenant config file, not a separate repository clone. Reasoning: the entire
+Harbison Standard codebase is the white-label base. Every operator deploys from
+the same GitHub repo (same code, different tenant config + environment vars).
+Cloning the full repo for each operator would create maintenance burden and
+divergence risk. Instead, operators fork once, create new `tenants/[slug].ts`
+files, and push: one repo, many operators, no duplication.
+
+### `tenants/template.ts` is a second demo tenant, not the default
+
+The first live deployment uses `NEXT_PUBLIC_TENANT=harbison`. A second template
+tenant was added in Phase 4 to prove tenant isolation and demonstrate what an
+operator's config looks like. It's not a default — every new operator scaffolds
+their own config via `make-tenant.mjs`, which generates a filled-in file ready
+for customization, not a boilerplate copy of template.ts.
+
+### Phase 4 stage 2 (host-header resolution) is deferred
+
+The spec describes Phase 4 enabling "multiple operators, each their own site."
+The architecture is designed for it — every page reads from a single tenant
+config per request, RLS guarantees lead isolation, the tenant registry in
+`tenants/index.ts` is extensible. But multi-operator on a **single domain** via
+host-header resolution (e.g., `harbison.example.com` vs. `chen.example.com`
+pointing to one Vercel project) is stage 2, not yet started. When/if that's
+needed, `middleware.ts` extends to resolve by `Host` header, and asset paths
+become per-tenant. Document this as an upcoming phase once a second operator is
+live and ready to pilot it.
+
 ## Post-Phase-3 (operator-supplied competitive audit: what got fixed, what didn't)
 
 An operator-supplied third-party site audit (comparing this site to
