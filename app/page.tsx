@@ -8,6 +8,9 @@ import { PortfolioSection } from "@/components/PortfolioSection";
 import { BenchmarkMark } from "@/components/BenchmarkMark";
 import { JsonLdScript } from "@/components/JsonLdScript";
 import { buildGraph } from "@/lib/jsonld";
+import { TrustBadges } from "@/components/TrustBadges";
+import { SocialProof } from "@/components/SocialProof";
+import { ComparisonTable } from "@/components/ComparisonTable";
 
 export const dynamic = "force-static";
 
@@ -90,6 +93,8 @@ export default function HomePage() {
         </div>
       </section>
 
+      <TrustBadges tenant={tenant} />
+
       {/* Deliberately light, not navy: the header + hero above this are
           already a full dark band. Stacking a third dark section here
           reads as an undifferentiated wall of navy (confirmed by
@@ -116,6 +121,8 @@ export default function HomePage() {
         heading={tenant.copy.signupHeading}
         subcopy={tenant.copy.signupSubcopy}
       />
+
+      <SocialProof />
 
       <section className="relative overflow-hidden bg-navy-deep py-20">
         <BenchmarkMark className="pointer-events-none absolute -left-24 -top-24 h-96 w-96 text-brass opacity-[0.04]" />
@@ -215,6 +222,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <ComparisonTable />
 
       <PortfolioSection tenant={tenant} />
 

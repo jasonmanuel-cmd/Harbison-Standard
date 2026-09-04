@@ -5,6 +5,7 @@ import { LeadForm } from "@/components/LeadForm";
 import { JsonLdScript } from "@/components/JsonLdScript";
 import { buildGraph } from "@/lib/jsonld";
 import { buildMetadata } from "@/lib/metadata";
+import { ComparisonTable } from "@/components/ComparisonTable";
 
 export const dynamic = "force-static";
 
@@ -88,6 +89,8 @@ export default function SellPage() {
           </div>
         </div>
       </section>
+
+      <ComparisonTable />
 
       <LeadForm
         source="sell"

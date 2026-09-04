@@ -84,13 +84,12 @@ export function LeadForm({
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
               <label htmlFor="phone" className="block text-sm font-semibold text-navy">
-                Phone
+                Phone <span className="text-xs font-normal text-navy/60">(optional)</span>
               </label>
               <input
                 type="tel"
                 id="phone"
                 name="phone"
-                required
                 className="mt-1 w-full border border-navy/30 bg-white px-4 py-3 text-navy"
               />
             </div>
@@ -186,10 +185,14 @@ export function LeadForm({
 
           <button
             type="submit"
-            className="w-full bg-brass px-6 py-3 text-sm font-semibold uppercase tracking-wide text-navy-deep"
+            className="w-full bg-brass px-6 py-3 text-sm font-semibold uppercase tracking-wide text-navy-deep hover:bg-brass/90"
           >
             Send it
           </button>
+
+          <p className="text-center text-xs text-navy/60">
+            No spam. No obligation. I will only use this to call or email you back.
+          </p>
 
           <p data-form-status role="status" className="hidden text-sm" />
         </form>
