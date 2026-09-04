@@ -329,6 +329,52 @@ restore. This also removed "No live Resend or Twilio send was made" as a
 Twilio-shaped gap above: there's no longer a Twilio integration to be
 gapped on, by design.
 
-**Next up — Phase 4:** host→tenant resolution in `middleware.ts`,
-`scripts/make-tenant.mjs`, a second demo tenant proving zero Harbison
-strings leak through, and the operator handbook (`OPERATOR.md`).
+## Phase 4 — White Label ✅ done
+
+**What's done:**
+- `OPERATOR.md` — comprehensive handbook for spinning up a second operator's
+  site. Covers: what white-labeling means, quick-start for operator #2,
+  customization checkpoints (branding, contact, copy, portfolio, FAQ, scoring),
+  email setup, CRM customization, monitoring, troubleshooting, and forward path
+  to multi-tenant-on-one-domain (Phase 4 stage 2, deferred).
+- `scripts/make-tenant.mjs` — interactive scaffolding tool that guides an
+  operator through creating a new `tenants/[slug].ts` config file by asking
+  them 8 questions (name, license, phone, email, service areas, positioning
+  line, hero headline). Generates a fully-typed tenant config with
+  `[CUSTOMIZE: ...]` placeholders, updates `tenants/index.ts` automatically,
+  and outputs next-steps instructions.
+- `tenants/template.ts` — second demo tenant, proving zero Harbison strings
+  leak through when a different `NEXT_PUBLIC_TENANT` loads the site. Every
+  field is populated with neutral placeholder copy; customization is the
+  operator's responsibility per `OPERATOR.md`. Wired into `tenants/index.ts`
+  so switching tenants is as simple as setting an env var.
+
+**How to test it:**
+```bash
+npm run typecheck && npm run lint && npm run build
+NEXT_PUBLIC_TENANT=template npm run dev
+# Visit http://localhost:3000 — all copy, contact info, nav, etc. read from
+# tenants/template.ts, not harbison.ts. No Harbison branding anywhere.
+npm run build -- env NEXT_PUBLIC_TENANT=template
+# Verifies template tenant builds cleanly to production.
+```
+
+**Known gaps / Phase 4 stage 2 (deferred):**
+- Host→tenant resolution in `middleware.ts` — currently the middleware only
+  handles auth gating, not domain→tenant lookup. Phase 4 stage 2 (not yet
+  planned) would extend it to resolve by `Host` header (or SNI, or DNS lookup)
+  so multiple operators can run on subdomains of a single Vercel project. See
+  the comment in `middleware.ts` about this design.
+- Asset segregation for multi-operator on one domain — `public/brand/logo.png`
+  and `public/portfolio/` currently live at shared paths. Multi-operator would
+  need per-tenant paths or S3/CDN-based asset serving. Deferred pending first
+  multi-operator deployment experience.
+
+**Next up — Phase 5+:**
+- Verified tenant rotation test (swap `NEXT_PUBLIC_TENANT` between `harbison`
+  and `template`, confirm zero data leakage via RLS)
+- Real multi-operator pilot (operator #2 creates a live site, shares feedback)
+- Host-header resolution (Phase 4 stage 2, when demand justifies)
+- Per-property landing pages / market-analysis reports (Phase 5)
+- Call recording / personalized video generation (Phase 5)
+- Two-way SMS conversation threading (Phase 5+)

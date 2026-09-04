@@ -1,4 +1,5 @@
 import { harbison } from "./harbison";
+import { template } from "./template";
 import type { TenantConfig } from "./types";
 
 // Registry of all tenants this deployment can serve. Phase 4 adds
@@ -7,6 +8,7 @@ import type { TenantConfig } from "./types";
 // single registered tenant, if only one exists).
 const tenants: Record<string, TenantConfig> = {
   [harbison.slug]: harbison,
+  [template.slug]: template,
 };
 
 export function getTenant(slug?: string): TenantConfig {
