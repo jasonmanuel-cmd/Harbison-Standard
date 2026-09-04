@@ -98,6 +98,34 @@ already provides all of it. The suite skips itself with a clear message if
 no local Postgres is reachable at all, rather than failing CI for an
 unrelated environment reason.
 
+### Verifying multi-tenant isolation (Phase 4)
+
+Phase 4 adds white-label support. Each operator gets their own tenant config,
+and RLS guarantees no lead leakage between operators sharing the same Supabase
+instance. To verify this manually:
+
+```bash
+# Terminal 1: Build and run Harbison
+npm run build                           # Default: NEXT_PUBLIC_TENANT=harbison
+NEXT_PUBLIC_TENANT=harbison npm run dev # http://localhost:3000
+
+# Terminal 2: Build and run template on different port
+NEXT_PUBLIC_TENANT=template npm run build
+NEXT_PUBLIC_TENANT=template npm run dev --port 3001  # http://localhost:3001
+```
+
+Then test end-to-end:
+1. Submit a test lead to Harbison at `http://localhost:3000/sell`
+2. Log in to Harbison CRM at `http://localhost:3000/dashboard`
+3. Confirm the lead appears on Harbison's board
+4. Submit a different test lead to template at `http://localhost:3001/sell`
+5. Log in to template CRM at `http://localhost:3001/dashboard`
+6. Confirm the second lead appears **only** on template, not Harbison
+
+Both instances share the same `NEXT_PUBLIC_SUPABASE_URL` and keys, but RLS
+enforces tenant isolation at the SQL level — not the application layer. See
+`OPERATOR.md` for full CRM onboarding and data-isolation verification steps.
+
 ## Checks
 
 ```bash

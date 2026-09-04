@@ -125,6 +125,74 @@ Automated emails (auto-reply, morning briefing, nurture check-in) are sent `from
 
 If you don't have `RESEND_FROM_EMAIL` set, emails still log to console and to `outreach_log` for testing — but nothing actually reaches a lead's inbox (Resend rejects the send with a clear error about an unverified domain).
 
+## CRM access: login and first admin setup
+
+Once your operator #2 site is deployed, you need to create the first admin user
+(the CRM dashboard owner). This is a one-time setup step.
+
+### Step 1: Create an auth user in Supabase
+
+1. Go to your Supabase project → **Authentication** → **Users**
+2. Click **+ Create new user**
+3. Enter your email (or the operator's email)
+4. Set a password (or skip it; Supabase sends a magic-link email instead)
+5. Click **Create user**
+
+Supabase now has an auth record for this email. But they can't access the CRM
+yet — the `profiles` table needs a row linking their `auth.users.id` to the
+`chen` tenant.
+
+### Step 2: Create their profile row in Supabase
+
+Go to **SQL Editor** in Supabase and run:
+
+```sql
+insert into profiles (id, tenant_id, display_name) values (
+  'AUTH_USER_ID_HERE',
+  (select id from tenants where slug = 'chen'),
+  'Jamie Chen'
+);
+```
+
+Replace `AUTH_USER_ID_HERE` with the user ID from step 1 (copy it from the Users
+list). This row ties the auth user to your `chen` tenant.
+
+### Step 3: Test login
+
+Visit your operator #2 domain's `/login` page:
+- If using email/password: enter the credentials from step 1
+- If using magic link: check the email Supabase sent, click the link
+
+You should land on `/dashboard` and see **your own leads only** (none yet on a
+fresh deployment, unless you submit test leads from `/sell` first).
+
+### Verifying tenant isolation
+
+To prove no lead leakage between operators, run this test:
+
+```bash
+# Terminal 1: Start dev server for Harbison
+NEXT_PUBLIC_TENANT=harbison npm run dev
+# Visit http://localhost:3000/sell, submit a test lead
+# Navigate to http://localhost:3000/dashboard and log in as Harbison user
+# Confirm the lead appears
+
+# Terminal 2 (new terminal): Start dev server for template
+NEXT_PUBLIC_TENANT=template npm run dev --port 3001
+# Visit http://localhost:3001/sell, submit a test lead with different email
+# Navigate to http://localhost:3001/dashboard and log in as template user
+# Confirm the lead appears on template, but NOT Harbison's dashboard
+```
+
+If a single Supabase instance is configured for both (shared database), RLS
+guarantees:
+- Harbison sees only Harbison leads
+- Template sees only template leads
+- No request parameter, cookie, or query manipulation can cross the boundary
+
+This is enforced in the SQL `leads` table via `auth.uid()` lookup against
+`current_tenant_id()` — not the application layer, not the env var.
+
 ## CRM + Mobile + Voice: what's wired, what's pending
 
 **Fully wired and working:**
