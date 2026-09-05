@@ -168,6 +168,22 @@ export default function InvestPage() {
         </div>
       </section>
 
+      {/* CRM Dashboard Link */}
+      <section className="bg-paper py-20">
+        <div className="mx-auto max-w-3xl px-6 text-center">
+          <h2 className="font-serif text-3xl text-navy mb-4">Partner Dashboard</h2>
+          <p className="text-navy/70 mb-6">
+            Access the live deal pipeline, lead board, and performance metrics.
+          </p>
+          <a
+            href="/dashboard"
+            className="inline-block bg-navy text-white px-8 py-4 font-bold uppercase tracking-[0.2em] text-sm hover:bg-navy-deep transition-colors"
+          >
+            View Partner Dashboard
+          </a>
+        </div>
+      </section>
+
       {/* Request Allocation */}
       <section className="bg-navy py-20">
         <div className="mx-auto max-w-2xl px-6">
