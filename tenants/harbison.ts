@@ -26,7 +26,7 @@ export const harbison: TenantConfig = {
 
   contact: {
     displayName: "Nathaniel Harbison",
-    roleLine: "Realtor · Developer · Investor — All Around Kern County, CA",
+    roleLine: "Wholesale Acquisition · Institutional Capital",
     phone: "(661) 472-7499",
     phoneHref: "tel:+16614727499",
     email: "nate85.realtor@gmail.com",
@@ -42,9 +42,8 @@ export const harbison: TenantConfig = {
   },
 
   nav: [
-    { label: "Sell", href: "/sell" },
-    { label: "Build", href: "/build" },
-    { label: "Land", href: "/land" },
+    { label: "Sell Property", href: "/offer" },
+    { label: "Invest", href: "/invest" },
     { label: "Communities", href: "/communities" },
     { label: "Press", href: "/press" },
     { label: "FAQ", href: "/faq" },
