@@ -1,255 +1,126 @@
-import Link from "next/link";
 import { getTenant } from "@/tenants";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { LeadForm } from "@/components/LeadForm";
-import { AboutSection } from "@/components/AboutSection";
-import { PortfolioSection } from "@/components/PortfolioSection";
-import { BenchmarkMark } from "@/components/BenchmarkMark";
 import { JsonLdScript } from "@/components/JsonLdScript";
 import { buildGraph } from "@/lib/jsonld";
-import { TrustBadges } from "@/components/TrustBadges";
-import { SocialProof } from "@/components/SocialProof";
-import { ComparisonTable } from "@/components/ComparisonTable";
 
 export const dynamic = "force-static";
 
+export const metadata = {
+  title: "Harbison Standard | Wholesale Acquisition & Institutional Capital",
+  description:
+    "Acquisition platform for cash sellers and institutional investors. Direct offers on properties. Off-market deal flow.",
+};
+
 export default function HomePage() {
   const tenant = getTenant();
-  const teaserFaq = tenant.faq.slice(0, 3);
 
   return (
     <>
       <JsonLdScript
         graph={buildGraph(tenant, {
           breadcrumbs: [{ name: "Home", path: "/" }],
-          faq: true,
         })}
       />
-      <Header tenant={tenant} />
 
-      <section className="relative flex min-h-[92vh] items-center overflow-hidden bg-navy">
-        {/* object-cover (not contain) is deliberate: this is a full-bleed
-            hero banner, not a boxed picture — the section has a real
-            min-height so the crop stays reasonable at every viewport
-            instead of the aggressive zoom a short/narrow container would
-            force. animate-kenburns is a slow, one-shot CSS scale — pure
-            CSS, no JS, so a no-JS browser just sees the plain video. */}
-        <video
-          className="absolute inset-0 h-full w-full origin-center animate-kenburns object-cover object-center"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          aria-hidden="true"
-        >
-          <source src="/media/hero.mp4" type="video/mp4" />
-        </video>
-        <div
-          className="absolute inset-0 bg-gradient-to-t from-navy-deep via-navy/70 to-navy/30"
-          aria-hidden="true"
-        />
-        <div
-          className="absolute inset-0 bg-gradient-to-r from-navy-deep/80 via-transparent to-transparent"
-          aria-hidden="true"
-        />
-        <BenchmarkMark className="pointer-events-none absolute -right-16 top-1/2 h-96 w-96 -translate-y-1/2 text-brass opacity-10" />
+      <style>{`
+        body {
+          margin: 0;
+          overflow: hidden;
+          background-color: #051024;
+        }
 
-        <div className="relative mx-auto w-full max-w-3xl px-6 py-24">
-          <p className="animate-fade-up inline-flex items-center gap-2 border border-brass/40 bg-navy-deep/60 px-4 py-2 font-serif text-xs font-semibold uppercase tracking-[0.3em] text-brass backdrop-blur-sm">
-            <span aria-hidden="true">◆</span>
-            {tenant.contact.roleLine}
-          </p>
-          <h1 className="animate-fade-up mt-6 font-serif text-5xl leading-[1.05] text-white [animation-delay:150ms] [text-shadow:0_2px_24px_rgba(0,0,0,0.45)] md:text-7xl">
-            {tenant.copy.heroHeadline.replace(
-              tenant.copy.heroHeadlineHighlight,
-              "",
-            )}
-            <span className="text-brass">
-              {tenant.copy.heroHeadlineHighlight}
-            </span>
-          </h1>
-          <p className="animate-fade-up mt-6 max-w-xl text-lg text-steel [animation-delay:300ms]">
-            {tenant.copy.heroSubcopy}
-          </p>
-          <div className="animate-fade-up mt-10 flex flex-wrap gap-4 [animation-delay:450ms]">
-            <a
-              href="#lead-form"
-              className="bg-brass px-8 py-4 text-sm font-semibold uppercase tracking-wide text-navy-deep shadow-[0_8px_30px_rgba(201,162,75,0.35)] transition-transform hover:scale-105"
-            >
-              {tenant.copy.heroPrimaryCta}
-            </a>
-            <Link
-              href="/build"
-              className="border border-white/40 bg-white/5 px-8 py-4 text-sm font-semibold uppercase tracking-wide text-white backdrop-blur-sm transition-colors hover:border-white hover:bg-white/15"
-            >
-              {tenant.copy.heroSecondaryCta}
-            </Link>
-          </div>
-          <p className="animate-fade-up mt-12 text-xs uppercase tracking-[0.3em] text-steel/70 [animation-delay:600ms]">
-            {tenant.contact.licenseLine} · Equal Housing Opportunity
-          </p>
-        </div>
-      </section>
+        @media (min-width: 768px) {
+          .panel-hover {
+            transition: flex 0.7s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.5s ease;
+          }
+          .panel-hover:hover {
+            flex: 1.15;
+          }
+        }
 
-      <TrustBadges tenant={tenant} />
+        .scanlines::before {
+          content: " ";
+          display: block;
+          position: absolute;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          right: 0;
+          background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+          z-index: 100;
+          background-size: 100% 3px, 3px 100%;
+          pointer-events: none;
+          opacity: 0.4;
+        }
+      `}</style>
 
-      {/* Deliberately light, not navy: the header + hero above this are
-          already a full dark band. Stacking a third dark section here
-          reads as an undifferentiated wall of navy (confirmed by
-          screenshot during dev) rather than a designed rhythm. */}
-      <section className="border-y border-navy/10 bg-paper py-14">
-        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-x-6 gap-y-10 divide-navy/10 px-6 text-center md:grid-cols-4 md:divide-x">
-          {tenant.copy.proofStats.map((stat) => (
-            <div key={stat.label} className="px-2">
-              <p className="font-serif text-4xl text-navy md:text-5xl">
-                {stat.value}
-              </p>
-              <p className="mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-navy/60">
-                {stat.label}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <AboutSection tenant={tenant} />
-
-      <LeadForm
-        source="home"
-        heading={tenant.copy.signupHeading}
-        subcopy={tenant.copy.signupSubcopy}
-      />
-
-      <SocialProof />
-
-      <section className="relative overflow-hidden bg-navy-deep py-20">
-        <BenchmarkMark className="pointer-events-none absolute -left-24 -top-24 h-96 w-96 text-brass opacity-[0.04]" />
-        <div className="relative mx-auto max-w-5xl px-6">
-          <p className="text-center font-serif text-xs font-semibold uppercase tracking-[0.3em] text-brass">
-            One point of contact, every stage
-          </p>
-          <h2 className="mt-3 text-center font-serif text-3xl text-white md:text-4xl">
-            Three ways to work together
-          </h2>
-
-          {/* CSS-only tabs: radio inputs drive :checked state via Tailwind's
-              peer/name selectors, no client JS. Unrolled (not .map()'d) on
-              purpose — Tailwind's JIT scanner needs each peer/peer-checked
-              class to appear as a literal string in this file; a template-
-              interpolated class name (e.g. `peer/${pillar}`) never gets
-              generated. Assumes exactly 3 services, same as the funnel
-              pages and nav elsewhere in this codebase. */}
-          <div className="relative mt-12">
-            <input
-              type="radio"
-              name="pillar"
-              id="pillar-tab-0"
-              defaultChecked
-              className="peer/tab0 sr-only"
-            />
-            <input
-              type="radio"
-              name="pillar"
-              id="pillar-tab-1"
-              className="peer/tab1 sr-only"
-            />
-            <input
-              type="radio"
-              name="pillar"
-              id="pillar-tab-2"
-              className="peer/tab2 sr-only"
-            />
-
-            <div
-              role="tablist"
-              aria-label="Ways to work with The Harbison Standard"
-              className="flex flex-wrap justify-center gap-2 border-b border-white/10"
-            >
-              {tenant.copy.services.map((service, index) => (
-                <label
-                  key={service.href}
-                  htmlFor={`pillar-tab-${index}`}
-                  className={`cursor-pointer border-b-2 border-transparent px-5 py-3 font-serif text-xs font-semibold uppercase tracking-[0.3em] text-steel transition-colors hover:text-white ${
-                    index === 0
-                      ? "peer-checked/tab0:border-brass peer-checked/tab0:text-brass"
-                      : index === 1
-                        ? "peer-checked/tab1:border-brass peer-checked/tab1:text-brass"
-                        : "peer-checked/tab2:border-brass peer-checked/tab2:text-brass"
-                  }`}
-                >
-                  {String(index + 1).padStart(2, "0")} · {service.title}
-                </label>
-              ))}
-            </div>
-
-            {tenant.copy.services.map((service, index) => (
-              <div
-                key={service.href}
-                className={
-                  index === 0
-                    ? "hidden peer-checked/tab0:block"
-                    : index === 1
-                      ? "hidden peer-checked/tab1:block"
-                      : "hidden peer-checked/tab2:block"
-                }
-              >
-                <div className="grid gap-6 border border-white/10 bg-white/[0.03] p-8 transition-colors duration-300 hover:border-brass/40 hover:bg-white/[0.06] md:grid-cols-[auto,1fr] md:items-center md:gap-10 md:p-12">
-                  <p className="font-serif text-xs font-semibold uppercase tracking-[0.3em] text-brass">
-                    {service.pillar}
-                  </p>
-                  <div>
-                    <h3 className="font-serif text-3xl text-white">
-                      {service.title}
-                    </h3>
-                    <p className="mt-4 max-w-xl text-steel">
-                      {service.description}
-                    </p>
-                    <Link
-                      href={service.href}
-                      className="group mt-6 inline-flex items-center gap-2 border-b border-brass text-sm font-semibold uppercase tracking-wide text-brass hover:text-white"
-                    >
-                      Learn more
-                      <span className="transition-transform group-hover:translate-x-1">
-                        →
-                      </span>
-                    </Link>
-                  </div>
-                </div>
+      <div className="relative flex h-screen w-screen flex-col overflow-hidden bg-navy text-white md:flex-row scanlines">
+        {/* Logo Header */}
+        <div className="absolute top-8 left-1/2 z-50 -translate-x-1/2 w-full px-4 md:top-12">
+          <div className="mx-auto flex w-fit flex-col items-center">
+            <div className="border border-brass bg-navy/95 backdrop-blur-md p-4 md:p-6 flex items-center justify-center space-x-4 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+              <div className="relative w-12 h-12 md:w-16 md:h-16 border border-brass rounded-full flex items-center justify-center">
+                <div className="absolute top-0 bottom-0 left-1/2 w-[1px] bg-brass -translate-x-1/2"></div>
+                <div className="absolute left-0 right-0 top-1/2 h-[1px] bg-brass -translate-y-1/2"></div>
+                <span className="font-serif text-2xl md:text-4xl text-brass relative z-10 bg-navy/90 px-1">
+                  H
+                </span>
               </div>
-            ))}
+              <div className="text-left pl-2 border-l border-brass/30">
+                <h1 className="font-serif text-xl md:text-3xl tracking-widest text-white uppercase font-bold leading-none mb-1">
+                  Harbison
+                </h1>
+                <h2 className="font-sans text-[0.6rem] md:text-xs tracking-[0.3em] md:tracking-[0.4em] font-light text-brass uppercase">
+                  Standard
+                </h2>
+              </div>
+            </div>
           </div>
         </div>
-      </section>
 
-      <ComparisonTable />
-
-      <PortfolioSection tenant={tenant} />
-
-      <section className="bg-paper py-20">
-        <div className="mx-auto max-w-3xl px-6">
-          <h2 className="font-serif text-3xl text-navy">Frequently asked</h2>
-          <div className="mt-8 space-y-4">
-            {teaserFaq.map((entry) => (
-              <details key={entry.id} className="border border-navy/10 bg-white p-5">
-                <summary className="cursor-pointer font-semibold text-navy">
-                  {entry.question}
-                </summary>
-                <p className="mt-3 text-navy/70">{entry.answer}</p>
-              </details>
-            ))}
+        {/* Sell Panel */}
+        <a
+          href="/offer"
+          className="group panel-hover flex-1 flex flex-col justify-center items-center p-8 md:p-16 border-b md:border-b-0 md:border-r border-white/10 relative hover:bg-white/[0.02] cursor-pointer outline-none focus:ring-4 focus:ring-white/20"
+        >
+          <div className="max-w-md text-center z-10 relative mt-24 md:mt-0">
+            <h2 className="font-serif text-4xl md:text-6xl font-bold mb-4 text-white group-hover:-translate-y-2 transition-transform duration-500 ease-out">
+              I Need To Sell<br />A Property
+            </h2>
+            <div className="w-12 h-[1px] bg-white mx-auto mb-6 group-hover:scale-x-150 transition-transform duration-500"></div>
+            <p className="text-gray-400 text-sm md:text-base tracking-wide mb-10 leading-relaxed font-light px-4">
+              Direct cash offers, flexible timelines, zero agent fees. We buy properties direct.
+            </p>
+            <button className="uppercase tracking-[0.2em] text-xs md:text-sm font-bold border border-white text-white px-10 py-5 hover:bg-white hover:text-navy transition-all duration-300 w-full md:w-auto">
+              Get My Offer
+            </button>
           </div>
-          <Link
-            href="/faq"
-            className="mt-6 inline-block font-semibold text-navy underline decoration-brass"
-          >
-            See the full FAQ →
-          </Link>
-        </div>
-      </section>
+          <div className="absolute bottom-4 left-8 text-white/5 font-serif text-7xl md:text-[12rem] pointer-events-none select-none leading-none">
+            01
+          </div>
+        </a>
 
-      <Footer tenant={tenant} />
+        {/* Invest Panel */}
+        <a
+          href="/invest"
+          className="group panel-hover flex-1 flex flex-col justify-center items-center p-8 md:p-16 relative hover:bg-brass/[0.03] cursor-pointer outline-none focus:ring-4 focus:ring-brass/30"
+        >
+          <div className="max-w-md text-center z-10 relative mb-12 md:mb-0 mt-8 md:mt-0">
+            <h2 className="font-serif text-4xl md:text-6xl font-bold mb-4 text-brass group-hover:-translate-y-2 transition-transform duration-500 ease-out">
+              I Am An<br />Investor
+            </h2>
+            <div className="w-12 h-[1px] bg-brass mx-auto mb-6 group-hover:scale-x-150 transition-transform duration-500"></div>
+            <p className="text-gray-400 text-sm md:text-base tracking-wide mb-10 leading-relaxed font-light px-4">
+              Access off-market distressed assets, development projects, and institutional private equity opportunities.
+            </p>
+            <button className="uppercase tracking-[0.2em] text-xs md:text-sm font-bold border border-brass text-brass px-10 py-5 hover:bg-brass hover:text-navy transition-all duration-300 w-full md:w-auto shadow-[0_0_15px_rgba(197,160,89,0)] group-hover:shadow-[0_0_25px_rgba(197,160,89,0.2)]">
+              Access Inventory
+            </button>
+          </div>
+          <div className="absolute top-4 right-8 md:top-auto md:bottom-4 md:right-8 text-brass/5 font-serif text-7xl md:text-[12rem] pointer-events-none select-none leading-none">
+            02
+          </div>
+        </a>
+      </div>
     </>
   );
 }

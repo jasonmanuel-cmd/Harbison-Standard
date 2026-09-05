@@ -24,7 +24,7 @@ export function LeadForm({
   heading = "Get a number on your property",
   subcopy = "Tell me about the property. I’ll call you back — no obligation.",
 }: {
-  source: "home" | "sell" | "build" | "land" | "press";
+  source: "home" | "sell" | "build" | "land" | "press" | "offer" | "invest";
   defaultSituation?: string;
   heading?: string;
   subcopy?: string;
