@@ -1,0 +1,29 @@
+{
+  "ci": {
+    "collect": {
+      "staticDistDir": null,
+      "startServerCommand": "npm run start -- -p 4173",
+      "startServerReadyPattern": "Ready in",
+      "url": [
+        "http://localhost:4173/",
+        "http://localhost:4173/sell",
+        "http://localhost:4173/build",
+        "http://localhost:4173/land",
+        "http://localhost:4173/press",
+        "http://localhost:4173/faq"
+      ]
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance": ["error", { "minScore": 0.95 }],
+        "categories:accessibility": ["error", { "minScore": 0.95 }],
+        "categories:best-practices": ["error", { "minScore": 0.95 }],
+        "categories:seo": ["error", { "minScore": 0.95 }]
+      }
+    },
+    "upload": {
+      "target": "filesystem",
+      "outputDir": "./.lighthouseci"
+    }
+  }
+}
