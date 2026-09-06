@@ -65,42 +65,91 @@ export default function HomePage() {
 
       <Header tenant={tenant} />
 
-      {/* Hero Section with Property Image */}
-      <section className="relative w-full h-screen flex items-center justify-center overflow-hidden">
-        <img
-          src="/portfolio/house1.jpg"
-          alt="Premium property development"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="hero-overlay"></div>
+      {/* Hero Section - Three Column Layout */}
+      <section className="relative w-full min-h-screen bg-gradient-to-r from-navy via-navy to-navy/95">
+        <div className="absolute inset-0 grid grid-cols-3 overflow-hidden">
+          {/* Left Column - Headshot */}
+          <div className="relative">
+            <img
+              src="/brand/headshot.webp"
+              alt="Nathanael Harbison"
+              className="w-full h-full object-cover"
+            />
+          </div>
 
-        <div className="relative z-10 text-center max-w-4xl px-6">
-          <p className="text-brass uppercase tracking-widest font-semibold text-sm mb-6">The Harbison Standard</p>
-          <h1 className="font-serif text-5xl md:text-7xl text-white mb-6 leading-tight">
-            Built from the <span className="text-brass">ground up</span>
-          </h1>
-          <p className="text-white/90 text-lg md:text-xl max-w-2xl mx-auto mb-12 leading-relaxed">
-            It's not what you do, it's <span className="font-semibold text-brass">how you do it.</span> Premium real estate development and institutional investment.
-          </p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <Link
-              href="/offer"
-              className="bg-brass text-navy px-8 py-4 font-bold uppercase tracking-wider text-sm hover:bg-brass/90 transition-colors shadow-lg"
-            >
-              Explore Properties
-            </Link>
-            <Link
-              href="/invest"
-              className="border-2 border-brass text-brass px-8 py-4 font-bold uppercase tracking-wider text-sm hover:bg-brass hover:text-navy transition-colors"
-            >
-              Investor Access
-            </Link>
+          {/* Right Column - Property Image */}
+          <div className="col-span-1"></div>
+          <div className="relative">
+            <img
+              src="/portfolio/crestline-dr/1.webp"
+              alt="Premium property development"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-l from-transparent to-navy/40"></div>
           </div>
         </div>
 
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
-          <div className="text-white/60 text-sm uppercase tracking-widest animate-bounce">Scroll to explore</div>
+        {/* Center Content */}
+        <div className="relative z-10 h-full flex items-center justify-center px-8">
+          <div className="text-center max-w-2xl">
+            {/* Logo Section */}
+            <div className="mb-8">
+              <div className="flex items-center justify-center gap-4 mb-4">
+                <div className="text-brass">
+                  <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="1.5"/>
+                    <line x1="24" y1="6" x2="24" y2="12" stroke="currentColor" strokeWidth="1.5"/>
+                    <line x1="24" y1="36" x2="24" y2="42" stroke="currentColor" strokeWidth="1.5"/>
+                    <line x1="6" y1="24" x2="12" y2="24" stroke="currentColor" strokeWidth="1.5"/>
+                    <line x1="36" y1="24" x2="42" y2="24" stroke="currentColor" strokeWidth="1.5"/>
+                  </svg>
+                </div>
+                <h1 className="font-serif text-4xl text-white tracking-wide">HARBISON<br />STANDARD</h1>
+              </div>
+              <p className="text-brass uppercase tracking-widest font-semibold text-xs">Real Estate • Development • Investing</p>
+            </div>
+
+            {/* Tagline */}
+            <div className="mb-8">
+              <p className="font-serif text-3xl md:text-4xl text-white italic leading-relaxed">
+                It's not what you do,<br />
+                <span className="text-brass">it's how you do it.</span>
+              </p>
+            </div>
+
+            {/* Name and Credentials */}
+            <div className="border-t border-brass/50 pt-6">
+              <h2 className="font-serif text-2xl text-white mb-1">Nathanael Harbison</h2>
+              <p className="text-brass uppercase tracking-widest font-semibold text-xs mb-6">Realtor® | DRE# 02059393</p>
+
+              <div className="flex flex-wrap gap-4 justify-center">
+                <Link
+                  href="/offer"
+                  className="bg-brass text-navy px-6 py-3 font-bold uppercase tracking-wider text-xs hover:bg-brass/90 transition-colors"
+                >
+                  Sell Your Property
+                </Link>
+                <Link
+                  href="/invest"
+                  className="border border-brass text-brass px-6 py-3 font-bold uppercase tracking-wider text-xs hover:bg-brass hover:text-navy transition-colors"
+                >
+                  Investor Access
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side Text Accent */}
+        <div className="absolute right-8 top-1/2 transform -translate-y-1/2 z-20 text-right">
+          <p className="text-brass uppercase tracking-widest font-semibold text-xs mb-32">People.</p>
+          <p className="text-brass uppercase tracking-widest font-semibold text-xs mb-32">Properties.</p>
+          <p className="text-brass uppercase tracking-widest font-semibold text-xs mb-32">Potential.</p>
+        </div>
+
+        {/* Bottom Right Text */}
+        <div className="absolute right-8 bottom-8 z-20">
+          <p className="text-brass/80 uppercase tracking-widest font-semibold text-xs">From the Ground Up.</p>
         </div>
       </section>
 
@@ -132,17 +181,17 @@ export default function HomePage() {
               {
                 title: "Real Estate",
                 description: "Advisory grounded in place, timing, and the details that make a property matter.",
-                image: "/portfolio/house1a.jpg",
+                image: "/portfolio/windsong-st/1.jpg",
               },
               {
                 title: "Development",
                 description: "From first idea to final finish, we shape considered spaces with a lasting point of view.",
-                image: "/portfolio/house2.jpg",
+                image: "/portfolio/crestline-dr/1.webp",
               },
               {
                 title: "Investing",
                 description: "Selective partnerships built around alignment, diligence, and long-term conviction.",
-                image: "/portfolio/house2a.jpg",
+                image: "/portfolio/alsab-pl/1.jpg",
               },
             ].map((discipline) => (
               <div key={discipline.title} className="capabilities-card bg-white border border-navy/10">
@@ -191,7 +240,7 @@ export default function HomePage() {
             {/* Right: Image */}
             <div className="relative h-96">
               <img
-                src="/portfolio/house1b.webp"
+                src="/portfolio/woodshawn-dr/1.webp"
                 alt="Development process"
                 className="w-full h-full object-cover rounded-lg"
               />
