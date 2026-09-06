@@ -35,6 +35,54 @@ export default function HomePage() {
           50% { transform: translateY(-20px); }
         }
 
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 1; }
+        }
+
+        @keyframes shoot {
+          0% {
+            transform: translateX(0) translateY(0);
+            opacity: 1;
+          }
+          100% {
+            transform: translateX(300px) translateY(300px);
+            opacity: 0;
+          }
+        }
+
+        .starry-bg {
+          background: linear-gradient(180deg, #0a1628 0%, #051024 50%, #0d1b2a 100%);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .stars {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+        }
+
+        .star {
+          position: absolute;
+          width: 2px;
+          height: 2px;
+          background: white;
+          border-radius: 50%;
+          animation: twinkle 3s ease-in-out infinite;
+        }
+
+        .shooting-star {
+          position: absolute;
+          width: 2px;
+          height: 2px;
+          background: white;
+          border-radius: 50%;
+          box-shadow: 0 0 10px 1px rgba(255, 255, 255, 0.5);
+          animation: shoot 2s ease-in infinite;
+        }
+
         .gradient-bg {
           background: linear-gradient(-45deg, #f8f9fa, #ffffff, #f0f4f8, #ffffff);
           background-size: 400% 400%;
@@ -47,6 +95,49 @@ export default function HomePage() {
       `}</style>
 
       <Header tenant={tenant} />
+
+      {/* Starry Night Sky Section with Tagline */}
+      <section className="starry-bg py-32 relative">
+        {/* Animated stars */}
+        <div className="absolute inset-0 stars pointer-events-none">
+          {[...Array(50)].map((_, i) => (
+            <div
+              key={`star-${i}`}
+              className="star"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 3}s`,
+              }}
+            />
+          ))}
+          {[...Array(5)].map((_, i) => (
+            <div
+              key={`shooting-${i}`}
+              className="shooting-star"
+              style={{
+                left: `${Math.random() * 80}%`,
+                top: `${Math.random() * 60}%`,
+                animationDelay: `${i * 0.4}s`,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Tagline Section */}
+        <div className="mx-auto max-w-4xl px-6 text-center relative z-10">
+          <p className="font-serif italic text-brass text-2xl md:text-4xl mb-4 leading-relaxed">
+            "It's not what you do,
+          </p>
+          <p className="font-serif italic text-white text-3xl md:text-5xl font-bold leading-relaxed">
+            it's how you do it."
+          </p>
+          <div className="w-24 h-1 bg-gradient-to-r from-transparent via-brass to-transparent mx-auto mt-8 mb-12"></div>
+          <p className="text-white/80 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+            Excellence in execution. Precision in partnership. Direct, transparent, and committed to doing business the right way.
+          </p>
+        </div>
+      </section>
 
       {/* Hero Section with Image */}
       <section className="relative overflow-hidden gradient-bg pt-20 pb-32">
